@@ -1,6 +1,11 @@
-export type codebaseASGNode = classNode | enumNode | fieldNode | methodNode | interfaceNode;
+export type CodebaseASGNode =
+  | ClassNode
+  | EnumNode
+  | FieldNode
+  | MethodNode
+  | InterfaceNode;
 
-enum classModifier {
+enum ClassModifier {
   PUBLIC,
   PRIVATE,
   PROTECTED,
@@ -9,7 +14,7 @@ enum classModifier {
   STATIC,
 }
 
-enum fieldModifier {
+enum FieldModifier {
   PUBLIC,
   PRIVATE,
   PROTECTED,
@@ -19,7 +24,7 @@ enum fieldModifier {
   VOLATILE,
 }
 
-enum methodModifier {
+enum MethodModifier {
   PUBLIC,
   PRIVATE,
   PROTECTED,
@@ -28,7 +33,7 @@ enum methodModifier {
   ABSTRACT,
 }
 
-enum interfaceModifier {
+enum InterfaceModifier {
   PUBLIC,
   PRIVATE,
   PROTECTED,
@@ -37,38 +42,38 @@ enum interfaceModifier {
   FINAL,
 }
 
-export type classNode = {
+export type ClassNode = {
   fqn: string;
   name: string;
   packageName: string;
-  list: classModifier[];
+  list: ClassModifier[];
 };
 
-export type enumNode = {
+export type EnumNode = {
   fqn: string;
   name: string;
   packageName: string;
   constants: string[];
 };
 
-export type fieldNode = {
+export type FieldNode = {
   fqn: string;
   name: string;
   typeFqn: string;
-  modifiers: fieldModifier[];
+  modifiers: FieldModifier[];
 };
 
-export type methodNode = {
+export type MethodNode = {
   fqn: string;
   name: string;
   parameterFqns: string[];
   returnTypeFqn: string;
-  modifiers: methodModifier[];
+  modifiers: MethodModifier[];
 };
 
-export type interfaceNode = {
+export type InterfaceNode = {
   fqn: string;
   name: string;
   packageName: string;
-  modifiers: interfaceModifier[];
+  modifiers: InterfaceModifier[];
 };
