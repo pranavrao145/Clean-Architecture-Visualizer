@@ -1,0 +1,42 @@
+{
+    "singleton": {
+        "metadata": {
+            "patternType": "Design Pattern",
+            "patternCategory": "Creational",
+            "description": "Ensures a class has only one instance and provides a global point of access to it.",
+            "learningInfo": "You can use this for blah blah blah. It is whatever."
+        },
+        "candidateTopology": {
+            "nodes": [
+                {
+                    "identifier": "singletonClass",
+                    "nodeType": "class",
+                    "requiredModifiers": [] 
+                },
+                {
+                    "identifier": "instanceField",
+                    "nodeType": "field",
+                    "requiredModifiers": ["PRIVATE", "STATIC"],
+                    "matchFieldTypeToClass": "singletonClass"
+                },
+                {
+                    "identifier": "getInstanceMethod",
+                    "nodeType": "method",
+                    "requiredModifiers": ["PUBLIC", "STATIC"]
+                }
+            ],
+            "edges": [
+                {
+                    "type": "hasFieldEdge",
+                    "source": "singletonClass",
+                    "target": "instanceField"
+                },
+                {
+                    "type": "hasMethodEdge",
+                    "source": "singletonClass",
+                    "target": "getInstanceMethod"
+                }
+            ]
+        }
+    }
+}
