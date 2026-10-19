@@ -1,36 +1,36 @@
-export type codebaseASGEdge =
-  | extendsEdge
-  | hasFieldEdge
-  | hasMethodEdge
-  | implementsEdge
-  | mutatesFieldEdge
-  | callsEdge;
+export type CodebaseASGEdge =
+  | ExtendsEdge
+  | HasFieldEdge
+  | HasMethodEdge
+  | ImplementsEdge
+  | MutatesFieldEdge
+  | CallsEdge;
 
 enum mutatingOperation {
   ASSIGN,
 }
 
-export type extendsEdge = {
+export type ExtendsEdge = {
   parentClassFqn: string;
   childClassFqn: string;
 };
 
-export type hasFieldEdge = { ownerFqn: string; fieldFqn: string };
+export type HasFieldEdge = { ownerFqn: string; fieldFqn: string };
 
-export type hasMethodEdge = { ownerFqn: string; methodFqn: string };
+export type HasMethodEdge = { ownerFqn: string; methodFqn: string };
 
-export type implementsEdge = {
+export type ImplementsEdge = {
   interfaceFqn: string;
   implementingClassFqn: string;
 };
 
-export type mutatesFieldEdge = {
+export type MutatesFieldEdge = {
   methodFqn: string;
   mutatedFieldFqn: string;
   operation: mutatingOperation;
 };
 
-export type callsEdge = {
+export type CallsEdge = {
   callingMethodFqn: string;
   calledMethodFqn: string;
   targetObjectFqn: string;
