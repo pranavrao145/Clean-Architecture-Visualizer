@@ -6,7 +6,7 @@ export type CodebaseASGEdge =
   | MutatesFieldEdge
   | CallsEdge;
 
-enum mutatingOperation {
+enum MutatingOperation {
   ASSIGN,
 }
 
@@ -27,7 +27,7 @@ export type ImplementsEdge = {
 export type MutatesFieldEdge = {
   methodFqn: string;
   mutatedFieldFqn: string;
-  operation: mutatingOperation;
+  operation: MutatingOperation;
 };
 
 export type CallsEdge = {
