@@ -5,51 +5,49 @@ export type CodebaseASGNode =
   | MethodNode
   | InterfaceNode;
 
-enum ClassModifier {
-  PUBLIC,
-  PRIVATE,
-  PROTECTED,
-  ABSTRACT,
-  FINAL,
-  STATIC,
-}
+export type ClassModifier =
+  | "PUBLIC"
+  | "PRIVATE"
+  | "PROTECTED"
+  | "ABSTRACT"
+  | "FINAL"
+  | "STATIC";
 
-enum FieldModifier {
-  PUBLIC,
-  PRIVATE,
-  PROTECTED,
-  STATIC,
-  FINAL,
-  TRANSIENT,
-  VOLATILE,
-}
+export type FieldModifier =
+  | "PUBLIC"
+  | "PRIVATE"
+  | "PROTECTED"
+  | "STATIC"
+  | "FINAL"
+  | "TRANSIENT"
+  | "VOLATILE";
 
-enum MethodModifier {
-  PUBLIC,
-  PRIVATE,
-  PROTECTED,
-  STATIC,
-  FINAL,
-  ABSTRACT,
-}
+export type MethodModifier =
+  | "PUBLIC"
+  | "PRIVATE"
+  | "PROTECTED"
+  | "STATIC"
+  | "FINAL"
+  | "ABSTRACT";
 
-enum InterfaceModifier {
-  PUBLIC,
-  PRIVATE,
-  PROTECTED,
-  ABSTRACT,
-  STATIC,
-  FINAL,
-}
+export type InterfaceModifier =
+  | "PUBLIC"
+  | "PRIVATE"
+  | "PROTECTED"
+  | "ABSTRACT"
+  | "STATIC"
+  | "FINAL";
 
 export type ClassNode = {
+  type: "CLASS";
   fqn: string;
   name: string;
   packageName: string;
-  list: ClassModifier[];
+  modifiers: ClassModifier[];
 };
 
 export type EnumNode = {
+  type: "ENUM";
   fqn: string;
   name: string;
   packageName: string;
@@ -57,6 +55,7 @@ export type EnumNode = {
 };
 
 export type FieldNode = {
+  type: "FIELD";
   fqn: string;
   name: string;
   typeFqn: string;
@@ -64,6 +63,7 @@ export type FieldNode = {
 };
 
 export type MethodNode = {
+  type: "METHOD";
   fqn: string;
   name: string;
   parameterFqns: string[];
@@ -72,6 +72,7 @@ export type MethodNode = {
 };
 
 export type InterfaceNode = {
+  type: "INTERFACE";
   fqn: string;
   name: string;
   packageName: string;
