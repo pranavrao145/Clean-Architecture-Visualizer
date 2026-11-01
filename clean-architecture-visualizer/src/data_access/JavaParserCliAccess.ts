@@ -33,8 +33,8 @@ export class JavaParserCliAccess implements JavaParserCliAccessInterface {
     return path.join(root, "lib", JAR_NAME);
   }
 
-  async buildCodebaseASG(sourceDir: string): Promise<CodebaseASG> {
-    const stdout = await this.runCli(sourceDir);
+  async buildCodebaseASG(): Promise<CodebaseASG> {
+    const stdout = await this.runCli();
 
     let raw: RawOutput;
 
@@ -49,11 +49,11 @@ export class JavaParserCliAccess implements JavaParserCliAccessInterface {
     return this.codebaseASGFactory.create(raw.nodes, raw.edges);
   }
 
-  private runCli(sourceDir: string): Promise<string> {
+  private runCli(): Promise<string> {
     return new Promise((resolve, reject) => {
       execFile(
         "java",
-        ["-jar", this.jarPath, "--src", sourceDir],
+        ["-jar", this.jarPath, "--src", process.cwd()],
         { maxBuffer: MAX_OUTPUT_BYTES, encoding: "utf8" },
         (error, stdout, stderr) => {
           if (error) {

@@ -57,10 +57,10 @@ describe("JavaParserCliAccess", () => {
     javaParserCliAccess = new JavaParserCliAccess(fakeFactory);
   });
 
-  it("invokes java with the jar and the source directory", async () => {
+  it("invokes java with the jar and the current working directory", async () => {
     mockCliOutput(fixtureJson);
 
-    await javaParserCliAccess.buildCodebaseASG("/some/src");
+    await javaParserCliAccess.buildCodebaseASG();
 
     expect(mockExecFile).toHaveBeenCalledTimes(1);
 
@@ -69,14 +69,14 @@ describe("JavaParserCliAccess", () => {
     expect(command).toBe("java");
     expect(args[0]).toBe("-jar");
     expect(args[1]).toMatch(/javaparser-cli-1\.0-SNAPSHOT-all\.jar$/);
-    expect(args.slice(2)).toEqual(["--src", "/some/src"]);
+    expect(args.slice(2)).toEqual(["--src", process.cwd()]);
   });
 
   it("builds the ASG nodes exactly as emitted by the CLI", async () => {
     mockCliOutput(fixtureJson);
     const expected = JSON.parse(fixtureJson);
 
-    const asg = await javaParserCliAccess.buildCodebaseASG("/some/src");
+    const asg = await javaParserCliAccess.buildCodebaseASG();
 
     expect(asg.getNodes()).toEqual(expected.nodes);
   });
@@ -85,7 +85,7 @@ describe("JavaParserCliAccess", () => {
     mockCliOutput(fixtureJson);
     const expected = JSON.parse(fixtureJson);
 
-    const asg = await javaParserCliAccess.buildCodebaseASG("/some/src");
+    const asg = await javaParserCliAccess.buildCodebaseASG();
 
     expect(asg.getEdges()).toEqual(expected.edges);
   });
@@ -93,7 +93,7 @@ describe("JavaParserCliAccess", () => {
   it("builds an empty ASG for an empty codebase", async () => {
     mockCliOutput(JSON.stringify({ nodes: [], edges: [] }));
 
-    const asg = await javaParserCliAccess.buildCodebaseASG("/some/src");
+    const asg = await javaParserCliAccess.buildCodebaseASG();
 
     expect(asg.getNodes()).toEqual([]);
     expect(asg.getEdges()).toEqual([]);
@@ -102,17 +102,17 @@ describe("JavaParserCliAccess", () => {
   it("rejects when the CLI output is not valid JSON", async () => {
     mockCliOutput("not json");
 
-    await expect(
-      javaParserCliAccess.buildCodebaseASG("/some/src"),
-    ).rejects.toThrow("JavaParser CLI produced invalid JSON");
+    await expect(javaParserCliAccess.buildCodebaseASG()).rejects.toThrow(
+      "JavaParser CLI produced invalid JSON",
+    );
   });
 
   it("rejects with stderr when the CLI fails", async () => {
     mockCliFailure("exit code 1", "bad source dir");
 
-    await expect(
-      javaParserCliAccess.buildCodebaseASG("/missing"),
-    ).rejects.toThrow(/JavaParser CLI failed: exit code 1\nbad source dir/);
+    await expect(javaParserCliAccess.buildCodebaseASG()).rejects.toThrow(
+      /JavaParser CLI failed: exit code 1\nbad source dir/,
+    );
   });
 });
 
