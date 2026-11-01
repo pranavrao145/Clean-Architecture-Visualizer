@@ -12,6 +12,12 @@
       "badge": "CHECKER",
       "cta": "Check now"
     },
+    "designPatterns": {
+      "title": "Design Pattern Checker",
+      "description": "Inspect the parsed structure of your codebase.",
+      "badge": "DESIGN PATTERNS",
+      "cta": "Inspect now"
+    },
     "learn": {
       "title": "Learn",
       "description": "Learn core concepts of clean architecture with our interactive visualizer.",

@@ -3,6 +3,7 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout';
 import { lightTheme } from './lib';
 import CheckerMode from './pages/CheckerMode';
+import DesignPatternChecker from './pages/DesignPatternChecker';
 import Home from './pages/Home';
 import ProjectStarter from './pages/ProjectStarter';
 import UseCaseInteractionDiagram from './pages/UseCaseInteractionDiagram';
@@ -19,6 +20,10 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/checker" element={<CheckerMode />} />
+            <Route
+              path="/design-pattern-checker"
+              element={<DesignPatternChecker />}
+            />
             <Route path="/project-starter" element={<ProjectStarter />} />
             <Route
               path="/use-case/:useCaseId/interaction/:interactionId/diagram"

@@ -61,7 +61,12 @@ export class AppBuilder {
   }
 
   private requireDeps() {
-    if (!this.fileAccess || !this.cleanArchAccess || !this.db) {
+    if (
+      !this.fileAccess ||
+      !this.cleanArchAccess ||
+      !this.db ||
+      !this.javaParserCliAccess
+    ) {
       throw new Error(
         "FileAccess, CleanArchAccess, SessionDBAccess, and JavaParserCliAccess must be set",
       );
@@ -70,6 +75,7 @@ export class AppBuilder {
       fileAccess: this.fileAccess,
       cleanArchAccess: this.cleanArchAccess,
       db: this.db,
+      javaParserCliAccess: this.javaParserCliAccess,
     };
   }
 
@@ -102,9 +108,9 @@ export class AppBuilder {
    * same session DB that verification just populated.
    */
   async runStart(backendOnly: boolean): Promise<void> {
-    const { db } = this.requireDeps();
+    const { db, javaParserCliAccess } = this.requireDeps();
     await this.runGraphVerification();
-    await startCommand({ backendOnly, db });
+    await startCommand({ backendOnly, db, javaParserCliAccess });
   }
 
   async runCLIGraphVerification(): Promise<void> {

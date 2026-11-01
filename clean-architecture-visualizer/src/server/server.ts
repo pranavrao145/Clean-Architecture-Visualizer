@@ -7,8 +7,10 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import type { ViteDevServer } from 'vite';
 
+import type { JavaParserCliAccessInterface } from '../data_access/JavaParserCliAccessInterface.js';
 import type { SessionDBAccessInterface } from '../data_access/sessionDBAccessInterface.js';
 import { createAnalysisRouter } from './routes/analysis.js';
+import { createDesignPatternRouter } from './routes/designPatterns.js';
 import template from './routes/template.js';
 
 let server: Server | null = null;
@@ -25,7 +27,8 @@ const isProd = process.env.NODE_ENV !== 'development';
 
 export async function startServer(
   backendOnly: boolean,
-  db: SessionDBAccessInterface
+  db: SessionDBAccessInterface,
+  javaParserCliAccess: JavaParserCliAccessInterface
 ): Promise<Server> {
   const app = express();
 
@@ -34,6 +37,7 @@ export async function startServer(
   // Routes
   app.use('/api', createAnalysisRouter(db));
   app.use('/api', template);
+  app.use('/api', createDesignPatternRouter(javaParserCliAccess));
 
   // Create Vite server in middleware mode
   if (!backendOnly) {
