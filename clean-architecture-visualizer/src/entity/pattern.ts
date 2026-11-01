@@ -5,7 +5,7 @@ import patternData from '../database/patterns.json' with {
 type PatternName = keyof typeof patternData;
 type PatternDefinition = (typeof patternData)[PatternName];
 
-export abstract class pattern {
+export abstract class Pattern {
   readonly data: PatternDefinition;
 
   constructor(patternName: PatternName) {
