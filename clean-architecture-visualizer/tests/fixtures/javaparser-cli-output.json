@@ -1,0 +1,92 @@
+{
+  "nodes": [
+    {
+      "type": "CLASS",
+      "fqn": "app.Dog",
+      "name": "Dog",
+      "packageName": "app",
+      "modifiers": ["PUBLIC"]
+    },
+    {
+      "type": "CLASS",
+      "fqn": "app.Animal",
+      "name": "Animal",
+      "packageName": "app",
+      "modifiers": ["PUBLIC", "ABSTRACT"]
+    },
+    {
+      "type": "INTERFACE",
+      "fqn": "app.Pet",
+      "name": "Pet",
+      "packageName": "app",
+      "modifiers": ["PUBLIC"]
+    },
+    {
+      "type": "ENUM",
+      "fqn": "app.Color",
+      "name": "Color",
+      "packageName": "app",
+      "constants": ["BROWN", "BLACK"]
+    },
+    {
+      "type": "FIELD",
+      "fqn": "app.Dog.name",
+      "name": "name",
+      "typeFqn": "java.lang.String",
+      "modifiers": ["PRIVATE"]
+    },
+    {
+      "type": "METHOD",
+      "fqn": "app.Dog.rename(java.lang.String, int)",
+      "name": "rename",
+      "returnTypeFqn": "void",
+      "parameterFqns": ["java.lang.String", "int"],
+      "modifiers": ["PUBLIC"]
+    },
+    {
+      "type": "METHOD",
+      "fqn": "app.Dog.bark()",
+      "name": "bark",
+      "returnTypeFqn": "void",
+      "parameterFqns": [],
+      "modifiers": ["PUBLIC"]
+    }
+  ],
+  "edges": [
+    {
+      "type": "EXTENDS",
+      "parentClassFqn": "app.Animal",
+      "childClassFqn": "app.Dog"
+    },
+    {
+      "type": "IMPLEMENTS",
+      "interfaceFqn": "app.Pet",
+      "implementingClassFqn": "app.Dog"
+    },
+    {
+      "type": "HAS_FIELD",
+      "ownerFqn": "app.Dog",
+      "fieldFqn": "app.Dog.name"
+    },
+    {
+      "type": "HAS_METHOD",
+      "ownerFqn": "app.Dog",
+      "methodFqn": "app.Dog.rename(java.lang.String, int)"
+    },
+    {
+      "type": "MUTATES_FIELD",
+      "methodFqn": "app.Dog.rename(java.lang.String, int)",
+      "mutatedFieldFqn": "app.Dog.name",
+      "operation": "ASSIGN"
+    },
+    {
+      "type": "CALLS",
+      "callingMethodFqn": "app.Dog.rename(java.lang.String, int)",
+      "calledMethodFqn": "app.Dog.bark()",
+      "targetObjectFqn": "app.Dog",
+      "insideLoop": false,
+      "insideConditional": false,
+      "isConstructorCall": false
+    }
+  ]
+}

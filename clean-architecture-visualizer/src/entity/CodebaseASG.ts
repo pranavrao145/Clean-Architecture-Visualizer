@@ -9,4 +9,12 @@ export class CodebaseASG {
     this.nodes = nodes;
     this.edges = edges;
   }
+
+  getNodes(): CodebaseASGNode[] {
+    return this.nodes;
+  }
+
+  getEdges(): CodebaseASGEdge[] {
+    return this.edges;
+  }
 }
