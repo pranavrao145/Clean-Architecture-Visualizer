@@ -7,13 +7,13 @@ import type {
 import type { PatternDefinition } from '../types/patternDefinition.js';
 import type { CodebaseASG } from './CodebaseASG.js';
 import { Pattern } from './Pattern.js';
-import { PatternID } from './PatternID.js';
+import { PatternId } from './PatternId.js';
 import { PatternName } from './PatternName.js';
 import { PatternType } from './PatternType.js';
 
 export class SingletonDesignPattern extends Pattern {
   constructor(data: PatternDefinition) {
-    if (data.id !== PatternID.Singleton) {
+    if (data.id !== PatternId.Singleton) {
       throw new Error(
         `Invalid pattern ID for SingletonDesignPattern: ${data.id}`
       );

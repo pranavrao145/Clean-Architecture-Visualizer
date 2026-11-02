@@ -1,14 +1,14 @@
 import { describe, expect, it } from '@jest/globals';
 import { CodebaseASG } from '../../../src/entity/CodebaseASG.js';
 import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.js';
-import { PatternID } from '../../../src/entity/PatternID.js';
+import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
 import { PatternType } from '../../../src/entity/PatternType.js';
 import { SingletonDesignPattern } from '../../../src/entity/SingletonDesignPattern.js';
 import type { PatternDefinition } from '../../../src/types/patternDefinition.js';
 
 const singletonDefinition: PatternDefinition = {
-  id: PatternID.Singleton,
+  id: PatternId.Singleton,
   metadata: {
     patternName: PatternName.Singleton,
     patternType: PatternType.DesignPattern,
@@ -24,7 +24,7 @@ const singletonDefinition: PatternDefinition = {
 describe('CommonPatternFactory', () => {
   it('creates the Singleton design pattern', async () => {
     const pattern = await new CommonPatternFactory().create(
-      PatternID.Singleton,
+      PatternId.Singleton,
       singletonDefinition
     );
 
@@ -38,7 +38,7 @@ describe('CommonPatternFactory', () => {
     const factory = new CommonPatternFactory();
 
     await expect(
-      factory.create('unknown' as PatternID, singletonDefinition)
+      factory.create('unknown' as PatternId, singletonDefinition)
     ).rejects.toThrow('Unknown pattern ID');
   });
 
@@ -59,7 +59,7 @@ describe('CommonPatternFactory', () => {
       () =>
         new SingletonDesignPattern({
           ...singletonDefinition,
-          id: 'invalid' as PatternID,
+          id: 'invalid' as PatternId,
         })
     ).toThrow('Invalid pattern ID');
   });

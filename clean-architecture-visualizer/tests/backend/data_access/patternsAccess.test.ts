@@ -4,7 +4,7 @@ import customPatternData from '../fixtures/patterns.custom.json' with {
 };
 import { PatternsAccess } from '../../../src/data_access/PatternsAccess.js';
 import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.js';
-import { PatternID } from '../../../src/entity/PatternID.js';
+import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
 import { PatternType } from '../../../src/entity/PatternType.js';
 import { SingletonDesignPattern } from '../../../src/entity/SingletonDesignPattern.js';
@@ -17,11 +17,11 @@ describe('PatternsAccess', () => {
 
   it('ingests metadata and candidate topology from a custom JSON fixture', async () => {
     const [pattern] = await customPatternsAccess.buildPatterns([
-      PatternID.Singleton,
+      PatternId.Singleton,
     ]);
 
     expect(pattern.data).toEqual({
-      id: PatternID.Singleton,
+      id: PatternId.Singleton,
       metadata: {
         patternName: PatternName.Singleton,
         patternType: PatternType.DesignPattern,
@@ -52,7 +52,7 @@ describe('PatternsAccess', () => {
   it('creates a pattern for each definition in patterns.json', async () => {
     const patterns = await new PatternsAccess(
       new CommonPatternFactory()
-    ).buildPatterns([PatternID.Singleton]);
+    ).buildPatterns([PatternId.Singleton]);
 
     expect(patterns).toHaveLength(1);
     expect(patterns[0]).toBeInstanceOf(SingletonDesignPattern);
@@ -69,7 +69,7 @@ describe('PatternsAccess', () => {
   it('rejects unknown requested IDs', async () => {
     await expect(
       new PatternsAccess(new CommonPatternFactory()).buildPatterns([
-        'unknown' as PatternID,
+        'unknown' as PatternId,
       ])
     ).rejects.toThrow('Unknown pattern ID');
   });

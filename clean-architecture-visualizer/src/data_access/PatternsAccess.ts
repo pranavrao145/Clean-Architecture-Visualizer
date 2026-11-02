@@ -1,7 +1,7 @@
 import defaultPatternData from '../database/patterns.json' with { type: 'json' };
 import type { Pattern } from '../entity/Pattern.js';
 import type { PatternFactory } from '../entity/PatternFactory.js';
-import { isPatternID, type PatternID } from '../entity/PatternID.js';
+import { isPatternId, type PatternId } from '../entity/PatternId.js';
 import { isPatternName } from '../entity/PatternName.js';
 import { isPatternType } from '../entity/PatternType.js';
 import type { PatternDefinition } from '../types/patternDefinition.js';
@@ -31,21 +31,21 @@ export class PatternsAccess implements PatternsAccessInterface {
     this.patternData = patternData;
   }
 
-  async buildPatterns(patternIDs: PatternID[]): Promise<Pattern[]> {
-    for (const patternID of patternIDs) {
-      if (!isPatternID(patternID)) {
-        throw new Error(`Unknown pattern ID: ${patternID}`);
+  async buildPatterns(patternIds: PatternId[]): Promise<Pattern[]> {
+    for (const patternId of patternIds) {
+      if (!isPatternId(patternId)) {
+        throw new Error(`Unknown pattern ID: ${patternId}`);
       }
     }
 
-    const requestedPatternIDs = new Set(patternIDs);
+    const requestedPatternIds = new Set(patternIds);
     const patterns = await Promise.all(
       Object.keys(this.patternData)
         .filter((patternDataKey) =>
-          requestedPatternIDs.has(patternDataKey as PatternID)
+          requestedPatternIds.has(patternDataKey as PatternId)
         )
         .map((patternDataKey) => {
-          const patternId = this.getPatternID(patternDataKey);
+          const patternId = this.getPatternId(patternDataKey);
           const validatedDefinition = this.parseDefinition(
             patternId,
             this.patternData[patternDataKey]
@@ -57,8 +57,8 @@ export class PatternsAccess implements PatternsAccessInterface {
     return patterns;
   }
 
-  private getPatternID(patternDataKey: string): PatternID {
-    if (!isPatternID(patternDataKey)) {
+  private getPatternId(patternDataKey: string): PatternId {
+    if (!isPatternId(patternDataKey)) {
       throw new Error(`Unknown pattern ID: ${patternDataKey}`);
     }
 
@@ -66,7 +66,7 @@ export class PatternsAccess implements PatternsAccessInterface {
   }
 
   private parseDefinition(
-    patternID: PatternID,
+    patternId: PatternId,
     definition: PatternDataDefinition
   ): PatternDefinition {
     if (!isPatternName(definition.metadata.patternName)) {
@@ -82,7 +82,7 @@ export class PatternsAccess implements PatternsAccessInterface {
     }
 
     return {
-      id: patternID,
+      id: patternId,
       metadata: {
         patternName: definition.metadata.patternName,
         patternType: definition.metadata.patternType,
