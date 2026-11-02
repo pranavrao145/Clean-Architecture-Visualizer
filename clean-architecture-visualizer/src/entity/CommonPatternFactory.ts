@@ -1,21 +1,21 @@
 import type { PatternDefinition } from '../types/patternDefinition.js';
 import type { Pattern } from './Pattern.js';
 import type { PatternFactory } from './PatternFactory.js';
-import { PatternID } from './PatternID.js';
+import { PatternId } from './PatternId.js';
 import { SingletonDesignPattern } from './SingletonDesignPattern.js';
 
 type PatternConstructor = new (data: PatternDefinition) => Pattern;
 
-const patternRegistry: Record<PatternID, PatternConstructor> = {
-  [PatternID.Singleton]: SingletonDesignPattern,
+const patternRegistry: Record<PatternId, PatternConstructor> = {
+  [PatternId.Singleton]: SingletonDesignPattern,
 };
 
 export class CommonPatternFactory implements PatternFactory {
   async create(
-    patternId: PatternID,
+    patternId: PatternId,
     data: PatternDefinition
   ): Promise<Pattern> {
-    if (!Object.values(PatternID).includes(patternId)) {
+    if (!Object.values(PatternId).includes(patternId)) {
       throw new Error(`Unknown pattern ID: ${patternId}`);
     }
 

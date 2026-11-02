@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { CodebaseASG } from '../../../src/entity/CodebaseASG.js';
 import { Pattern } from '../../../src/entity/Pattern.js';
-import { PatternID } from '../../../src/entity/PatternID.js';
+import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
 import { PatternType } from '../../../src/entity/PatternType.js';
 import { SingletonDesignPattern } from '../../../src/entity/SingletonDesignPattern.js';
@@ -17,7 +17,7 @@ const definition = (
   nodes: PatternDefinition['candidateTopology']['nodes'],
   edges: PatternDefinition['candidateTopology']['edges']
 ): PatternDefinition => ({
-  id: PatternID.Singleton,
+  id: PatternId.Singleton,
   metadata: {
     patternName: PatternName.Singleton,
     patternType: PatternType.DesignPattern,

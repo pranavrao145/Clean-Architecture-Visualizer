@@ -1,11 +1,11 @@
-import type { PatternID } from '../entity/PatternID.js';
+import type { PatternId } from '../entity/PatternId.js';
 import type { PatternName } from '../entity/PatternName.js';
 import type { PatternType } from '../entity/PatternType.js';
 import type { CodebaseASGEdge } from './codebaseASGEdges.js';
 import type { CodebaseASGNode } from './codebaseASGNodes.js';
 
 export type PatternDefinition = {
-  id: PatternID;
+  id: PatternId;
   metadata: {
     patternName: PatternName;
     patternType: PatternType;

@@ -33,12 +33,12 @@ definitions at startup.
 ## On-Demand Construction
 
 An application action requests the pattern IDs it needs through
-`AppBuilder.buildPatterns(patternIDs)`. The request follows this flow:
+`AppBuilder.buildPatterns(patternIds)`. The request follows this flow:
 
 ```text
 User action
     ↓
-AppBuilder.buildPatterns([PatternID.Singleton, ...])
+AppBuilder.buildPatterns([PatternId.Singleton, ...])
     ↓
 PatternsAccess.buildPatterns(...)
     ↓
@@ -46,7 +46,7 @@ Select requested definitions from patterns.json
     ↓
 Validate pattern ID, name, and type
     ↓
-PatternFactory.create(patternID, definition)
+PatternFactory.create(patternId, definition)
     ↓
 Concrete Pattern entity
 ```
