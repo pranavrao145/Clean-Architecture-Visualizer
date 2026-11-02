@@ -1,6 +1,8 @@
 import chalk from 'chalk';
 import type { CleanArchAccess } from '../data_access/cleanArchInfoAccess.js';
 import type { FileAccess } from '../data_access/fileAccess.js';
+import type { JavaParserCliAccess } from '../data_access/JavaParserCliAccess.js';
+import type { PatternsAccessInterface } from '../data_access/PatternsAccessInterface.js';
 import type { SessionDBAccess } from '../data_access/sessionDBAccess.js';
 import { CreateModuleUseCaseController } from '../interface_adapter/CreateModuleUseCase/createModuleUseCaseController.js';
 import { CreateModuleUseCasePresenter } from '../interface_adapter/CreateModuleUseCase/createModuleUseCasePresenter.js';
@@ -32,13 +34,13 @@ import { InitModuleProjectOutputData } from '../use_case/initModuleProject/initM
 import { InitProjectInputData } from '../use_case/initProject/initProjectInputData.js';
 import { InitProjectInteractor } from '../use_case/initProject/initProjectInteractor.js';
 import { InitProjectOutputData } from '../use_case/initProject/initProjectOutputData.js';
-import type { JavaParserCliAccess } from '../data_access/JavaParserCliAccess.js';
 
 export class AppBuilder {
   private fileAccess?: FileAccess;
   private cleanArchAccess?: CleanArchAccess;
   private db?: SessionDBAccess;
   private javaParserCliAccess?: JavaParserCliAccess;
+  private patternsAccess?: PatternsAccessInterface;
 
   withFileAccess(fileAccess: FileAccess): this {
     this.fileAccess = fileAccess;
@@ -60,15 +62,21 @@ export class AppBuilder {
     return this;
   }
 
+  withPatternsAccess(patternsAccess: PatternsAccessInterface): this {
+    this.patternsAccess = patternsAccess;
+    return this;
+  }
+
   private requireDeps() {
     if (
       !this.fileAccess ||
       !this.cleanArchAccess ||
       !this.db ||
-      !this.javaParserCliAccess
+      !this.javaParserCliAccess ||
+      !this.patternsAccess
     ) {
       throw new Error(
-        "FileAccess, CleanArchAccess, SessionDBAccess, and JavaParserCliAccess must be set",
+        'FileAccess, CleanArchAccess, SessionDBAccess, JavaParserCliAccess, and PatternsAccess must be set'
       );
     }
     return {
@@ -76,6 +84,7 @@ export class AppBuilder {
       cleanArchAccess: this.cleanArchAccess,
       db: this.db,
       javaParserCliAccess: this.javaParserCliAccess,
+      patternsAccess: this.patternsAccess,
     };
   }
 
