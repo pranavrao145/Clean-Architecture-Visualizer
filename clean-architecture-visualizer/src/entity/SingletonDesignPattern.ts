@@ -34,16 +34,37 @@ export class SingletonDesignPattern extends Pattern {
     super(data);
   }
 
+  /**
+   * Verifies the singleton structure by checking its shape, members, and
+   * ownership edges.
+   */
   candidateVerification(candidateASG: CodebaseASG): boolean {
-    // A verified candidate must contain exactly the class, field, and method
-    // described by the singleton topology, with no ambiguous alternatives.
     const nodes = candidateASG.getNodes();
     const edges = candidateASG.getEdges();
     if (nodes.length !== 3 || edges.length !== 2) {
       return false;
     }
 
-    // Identify each required node by its ASG type before applying semantics.
+    const singletonNodes = this.getSingletonNodes(nodes);
+    if (!singletonNodes) {
+      return false;
+    }
+
+    const { classNode, fieldNode, methodNode } = singletonNodes;
+    // Verify member semantics first, then confirm both ownership relationships.
+    return (
+      this.isValidInstanceField(fieldNode, classNode) &&
+      this.isValidAccessorMethod(methodNode, classNode) &&
+      this.hasRequiredEdges(edges, classNode, fieldNode, methodNode)
+    );
+  }
+
+  /** Extracts the unique class, field, and method required by a singleton. */
+  private getSingletonNodes(nodes: CodebaseASG['nodes']): {
+    classNode: ClassNode;
+    fieldNode: FieldNode;
+    methodNode: MethodNode;
+  } | undefined {
     const classNodes = nodes.filter(
       (node): node is ClassNode => node.type === 'CLASS'
     );
@@ -58,33 +79,47 @@ export class SingletonDesignPattern extends Pattern {
       fieldNodes.length !== 1 ||
       methodNodes.length !== 1
     ) {
-      return false;
+      return undefined;
     }
 
     const [classNode] = classNodes;
     const [fieldNode] = fieldNodes;
     const [methodNode] = methodNodes;
+    return { classNode, fieldNode, methodNode };
+  }
 
-    // The state field must be private, static, and hold this class's instance.
-    if (
-      fieldNode.name !== 'instance' ||
-      !this.hasExactlyModifiers(fieldNode.modifiers, ['PRIVATE', 'STATIC']) ||
-      fieldNode.typeFqn !== classNode.fqn
-    ) {
-      return false;
-    }
+  /** Checks that the instance field has the required name, type, and modifiers. */
+  private isValidInstanceField(
+    fieldNode: FieldNode,
+    classNode: ClassNode
+  ): boolean {
+    return (
+      fieldNode.name === 'instance' &&
+      this.hasExactlyModifiers(fieldNode.modifiers, ['PRIVATE', 'STATIC']) &&
+      fieldNode.typeFqn === classNode.fqn
+    );
+  }
 
-    // The accessor must be public, static, parameterless, and return this class.
-    if (
-      methodNode.name !== 'getInstance' ||
-      !this.hasExactlyModifiers(methodNode.modifiers, ['PUBLIC', 'STATIC']) ||
-      methodNode.parameterFqns.length !== 0 ||
-      methodNode.returnTypeFqn !== classNode.fqn
-    ) {
-      return false;
-    }
+  /** Checks that the accessor has the required name, signature, and modifiers. */
+  private isValidAccessorMethod(
+    methodNode: MethodNode,
+    classNode: ClassNode
+  ): boolean {
+    return (
+      methodNode.name === 'getInstance' &&
+      this.hasExactlyModifiers(methodNode.modifiers, ['PUBLIC', 'STATIC']) &&
+      methodNode.parameterFqns.length === 0 &&
+      methodNode.returnTypeFqn === classNode.fqn
+    );
+  }
 
-    // Both ownership edges must connect the class to the corresponding member.
+  /** Confirms that the class owns the required field and accessor edges. */
+  private hasRequiredEdges(
+    edges: CodebaseASG['edges'],
+    classNode: ClassNode,
+    fieldNode: FieldNode,
+    methodNode: MethodNode
+  ): boolean {
     const hasFieldEdge = edges.some(
       (edge): edge is HasFieldEdge =>
         edge.type === 'HAS_FIELD' &&
