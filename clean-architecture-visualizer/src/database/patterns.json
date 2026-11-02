@@ -9,32 +9,38 @@
         "candidateTopology": {
             "nodes": [
                 {
-                    "identifier": "singletonClass",
-                    "nodeType": "class",
-                    "requiredModifiers": [] 
+                    "type": "CLASS",
+                    "fqn": "$singletonClass",
+                    "name": "$singletonClass",
+                    "packageName": "",
+                    "modifiers": []
                 },
                 {
-                    "identifier": "instanceField",
-                    "nodeType": "field",
-                    "requiredModifiers": ["PRIVATE", "STATIC"],
-                    "matchFieldTypeToClass": "singletonClass"
+                    "type": "FIELD",
+                    "fqn": "$instanceField",
+                    "name": "$instanceField",
+                    "typeFqn": "$singletonClass",
+                    "modifiers": ["PRIVATE", "STATIC"]
                 },
                 {
-                    "identifier": "getInstanceMethod",
-                    "nodeType": "method",
-                    "requiredModifiers": ["PUBLIC", "STATIC"]
+                    "type": "METHOD",
+                    "fqn": "$getInstanceMethod",
+                    "name": "$getInstanceMethod",
+                    "parameterFqns": [],
+                    "returnTypeFqn": "$singletonClass",
+                    "modifiers": ["PUBLIC", "STATIC"]
                 }
             ],
             "edges": [
                 {
-                    "type": "hasFieldEdge",
-                    "source": "singletonClass",
-                    "target": "instanceField"
+                    "type": "HAS_FIELD",
+                    "ownerFqn": "$singletonClass",
+                    "fieldFqn": "$instanceField"
                 },
                 {
-                    "type": "hasMethodEdge",
-                    "source": "singletonClass",
-                    "target": "getInstanceMethod"
+                    "type": "HAS_METHOD",
+                    "ownerFqn": "$singletonClass",
+                    "methodFqn": "$getInstanceMethod"
                 }
             ]
         }
