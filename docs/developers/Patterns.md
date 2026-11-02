@@ -73,3 +73,39 @@ The same `PatternsAccess` instance can serve multiple user actions.
 This arrangement allows future user flows to request different subsets of
 patterns without changing application composition or constructing unused
 entities.
+
+## Candidate identification
+
+`Pattern.candidateIdentification(codebaseASG)` finds every subgraph in the
+provided ASG whose topology matches the pattern's `candidateTopology`. It
+returns an array of `CodebaseASG` objects. Each object represents one matching
+subgraph and can be inspected with `getNodes()` and `getEdges()`:
+
+```ts
+CodebaseASG[]
+```
+
+The matcher is generic and operates on the properties of any node or edge
+shape. It uses backtracking to assign distinct ASG nodes to topology nodes,
+then assigns distinct ASG edges to topology edges. Edge properties are matched
+after node assignment, so references such as `ownerFqn` and `fieldFqn` must
+connect the selected nodes in the declared direction.
+
+Pattern values follow these rules:
+
+- A string beginning with `$` is a placeholder. Its value is bound on first
+  use and must be equal at every later use. This expresses relationships
+  between node and edge properties.
+- An empty string is a wildcard.
+- An empty array is a wildcard. A non-empty array must have the same length and
+  values as the candidate, including placeholder bindings.
+- Other scalar values, including booleans, and object properties are matched
+  exactly unless one of the wildcard rules applies.
+- Extra ASG nodes and edges are allowed. Each returned `CodebaseASG` contains
+  only the nodes and edges assigned to the topology; additional edges between
+  selected nodes do not invalidate a match.
+
+For example, the singleton topology binds its class FQN through
+`$singletonClass`, then requires the field's `typeFqn` and the method's
+`returnTypeFqn` to reference that same FQN. Names and modifiers that are not
+part of the required topology are represented by wildcards.

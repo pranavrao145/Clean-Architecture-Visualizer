@@ -11,21 +11,21 @@
                 {
                     "type": "CLASS",
                     "fqn": "$singletonClass",
-                    "name": "$singletonClass",
+                    "name": "",
                     "packageName": "",
                     "modifiers": []
                 },
                 {
                     "type": "FIELD",
                     "fqn": "$instanceField",
-                    "name": "$instanceField",
+                    "name": "",
                     "typeFqn": "$singletonClass",
                     "modifiers": ["PRIVATE", "STATIC"]
                 },
                 {
                     "type": "METHOD",
                     "fqn": "$getInstanceMethod",
-                    "name": "$getInstanceMethod",
+                    "name": "",
                     "parameterFqns": [],
                     "returnTypeFqn": "$singletonClass",
                     "modifiers": ["PUBLIC", "STATIC"]
