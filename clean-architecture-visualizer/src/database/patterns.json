@@ -1,6 +1,7 @@
 {
     "singleton": {
         "metadata": {
+            "patternName": "Singleton",
             "patternType": "Design Pattern",
             "description": "Creational design pattern. Ensures a class has only one instance and provides a global point of access to it.",
             "learningInfo": "You can use this for blah blah blah. It is whatever."
