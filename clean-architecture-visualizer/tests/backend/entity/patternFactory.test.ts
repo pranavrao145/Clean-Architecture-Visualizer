@@ -31,7 +31,7 @@ describe('CommonPatternFactory', () => {
     expect(pattern).toBeInstanceOf(SingletonDesignPattern);
     expect(pattern.data.metadata.patternName).toBe(PatternName.Singleton);
     expect(pattern.data.metadata.patternType).toBe(PatternType.DesignPattern);
-    expect(pattern.candidateVerification(new CodebaseASG([], []))).toBe(true);
+    expect(pattern.candidateVerification(new CodebaseASG([], []))).toBe(false);
   });
 
   it('rejects unknown pattern IDs', async () => {
