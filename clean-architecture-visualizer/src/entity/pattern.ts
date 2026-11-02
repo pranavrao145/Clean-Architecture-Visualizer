@@ -1,20 +1,16 @@
-import patternData from '../database/patterns.json' with {
-  type: 'json',
-};
-
-type PatternName = keyof typeof patternData;
-type PatternDefinition = (typeof patternData)[PatternName];
+import type { PatternDefinition } from '../types/patternDefinition.js';
+import type { CodebaseASG } from './CodebaseASG.js';
 
 export abstract class Pattern {
   readonly data: PatternDefinition;
 
-  constructor(patternName: PatternName) {
-    this.data = patternData[patternName];
+  constructor(data: PatternDefinition) {
+    this.data = data;
   }
 
-  candidateIdentification(codebaseASG: object): boolean {
+  candidateIdentification(_codebaseASG: CodebaseASG): boolean {
     return true;
   }
 
-  abstract candidateVerification(codebaseASG: object): boolean;
+  abstract candidateVerification(_codebaseASG: CodebaseASG): boolean;
 }
