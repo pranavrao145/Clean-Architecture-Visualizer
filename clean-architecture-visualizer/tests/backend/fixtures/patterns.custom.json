@@ -1,0 +1,22 @@
+{
+  "singleton": {
+    "metadata": {
+      "patternName": "Singleton",
+      "patternType": "Design Pattern",
+      "description": "Fixture singleton description",
+      "learningInfo": "Fixture singleton learning information"
+    },
+    "candidateTopology": {
+      "nodes": [
+        {
+          "type": "CLASS",
+          "fqn": "$fixtureSingletonClass",
+          "name": "$fixtureSingletonClass",
+          "packageName": "fixture",
+          "modifiers": ["PUBLIC"]
+        }
+      ],
+      "edges": []
+    }
+  }
+}
