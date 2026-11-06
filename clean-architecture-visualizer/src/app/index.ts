@@ -12,13 +12,16 @@ import { CleanArchAccess } from '../data_access/cleanArchInfoAccess.js';
 import { FileAccess } from '../data_access/fileAccess.js';
 import { SessionDBAccess } from '../data_access/sessionDBAccess.js';
 import { AppBuilder } from './appBuilder.js';
+import { JavaParserCliAccess } from '../data_access/JavaParserCliAccess.js';
+import { CommonCodebaseASGFactory } from '../entity/CommonCodebaseASGFactory.js';
 
 const program = new Command();
 
 const app = new AppBuilder()
   .withFileAccess(new FileAccess())
   .withCleanArchAccess(new CleanArchAccess())
-  .withSessionDBAccess(new SessionDBAccess());
+  .withSessionDBAccess(new SessionDBAccess())
+  .withJavaParserCliAccess(new JavaParserCliAccess(new CommonCodebaseASGFactory()));
 
 program.version(packageJson.version);
 

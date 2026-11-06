@@ -32,11 +32,13 @@ import { InitModuleProjectOutputData } from '../use_case/initModuleProject/initM
 import { InitProjectInputData } from '../use_case/initProject/initProjectInputData.js';
 import { InitProjectInteractor } from '../use_case/initProject/initProjectInteractor.js';
 import { InitProjectOutputData } from '../use_case/initProject/initProjectOutputData.js';
+import type { JavaParserCliAccess } from '../data_access/JavaParserCliAccess.js';
 
 export class AppBuilder {
   private fileAccess?: FileAccess;
   private cleanArchAccess?: CleanArchAccess;
   private db?: SessionDBAccess;
+  private javaParserCliAccess?: JavaParserCliAccess;
 
   withFileAccess(fileAccess: FileAccess): this {
     this.fileAccess = fileAccess;
@@ -53,16 +55,27 @@ export class AppBuilder {
     return this;
   }
 
+  withJavaParserCliAccess(javaParserCliAccess: JavaParserCliAccess): this {
+    this.javaParserCliAccess = javaParserCliAccess;
+    return this;
+  }
+
   private requireDeps() {
-    if (!this.fileAccess || !this.cleanArchAccess || !this.db) {
+    if (
+      !this.fileAccess ||
+      !this.cleanArchAccess ||
+      !this.db ||
+      !this.javaParserCliAccess
+    ) {
       throw new Error(
-        'FileAccess, CleanArchAccess, and SessionDBAccess must be set'
+        "FileAccess, CleanArchAccess, SessionDBAccess, and JavaParserCliAccess must be set",
       );
     }
     return {
       fileAccess: this.fileAccess,
       cleanArchAccess: this.cleanArchAccess,
       db: this.db,
+      javaParserCliAccess: this.javaParserCliAccess,
     };
   }
 
@@ -95,9 +108,9 @@ export class AppBuilder {
    * same session DB that verification just populated.
    */
   async runStart(backendOnly: boolean): Promise<void> {
-    const { db } = this.requireDeps();
+    const { db, javaParserCliAccess } = this.requireDeps();
     await this.runGraphVerification();
-    await startCommand({ backendOnly, db });
+    await startCommand({ backendOnly, db, javaParserCliAccess });
   }
 
   async runCLIGraphVerification(): Promise<void> {

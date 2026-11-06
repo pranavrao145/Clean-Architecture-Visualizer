@@ -1,5 +1,6 @@
 import React from 'react';
 import '../i18n/config';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -26,6 +27,18 @@ const Home = () => {
       badgeBg: 'adapters.light',
       badgeColor: 'adapters.dark',
       ctaLabel: t('cards.checker.cta'),
+      ctaColor: 'adapters.dark',
+    },
+    { // TODO: make this unique
+      title: t('cards.designPatterns.title'),
+      description: t('cards.designPatterns.description'),
+      to: '/design-pattern-checker',
+      icon: <AccountTreeOutlinedIcon />,
+      iconColor: 'adapters.main',
+      badge: t('cards.designPatterns.badge'),
+      badgeBg: 'adapters.light',
+      badgeColor: 'adapters.dark',
+      ctaLabel: t('cards.designPatterns.cta'),
       ctaColor: 'adapters.dark',
     },
     {
