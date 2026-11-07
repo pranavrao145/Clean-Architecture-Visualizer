@@ -109,3 +109,33 @@ For example, the singleton topology binds its class FQN through
 `$singletonClass`, then requires the field's `typeFqn` and the method's
 `returnTypeFqn` to reference that same FQN. Names and modifiers that are not
 part of the required topology are represented by wildcards.
+
+## Adding a New Pattern
+
+Adding a pattern requires a data definition, a concrete entity, and registration
+in the pattern type system and factory:
+
+Use the singleton design pattern as the example when following these steps:
+compare its JSON definition, enum values, concrete entity, and factory
+registration with the new pattern you are adding.
+
+1. Add the pattern's metadata and `candidateTopology` to
+   `clean-architecture-visualizer/src/database/patterns.json`. The topology
+   describes the CodebaseASG nodes and edges used to identify candidates.
+2. Add the pattern's ID, name, and type to the corresponding enums in
+   `clean-architecture-visualizer/src/entity/PatternId.ts`,
+   `PatternName.ts`, and `PatternType.ts`.
+3. Create
+   `clean-architecture-visualizer/src/entity/<PatternName>Pattern.ts` by
+   extending `Pattern`. Implement `candidateVerification` to validate each
+   candidate identified from the topology.
+4. Register the new concrete class in
+   `clean-architecture-visualizer/src/entity/CommonPatternFactory.ts` so the
+   runtime factory can construct it for its `PatternId`.
+5. Add or update tests and run the relevant backend test suite. Verify both
+   candidate identification from the JSON topology and candidate verification
+   behavior.
+
+Keep JSON parsing and metadata validation in `PatternsAccess`; pattern entities
+should implement domain validation rather than depend directly on the JSON
+source.

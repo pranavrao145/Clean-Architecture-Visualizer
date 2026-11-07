@@ -92,3 +92,8 @@ _Avoid_: state, store
 **Composition root**:
 The one place that builds the CA Engine with dependency injection, then gets out of the way.
 _Avoid_: main (for the role)
+
+**Design pattern**:
+A reusable design solution that CAVE can identify in a Java codebase. To add one,
+follow the developer guide's [new pattern instructions](docs/developers/Patterns.md#adding-a-new-pattern),
+including the JSON definition, pattern enums, concrete entity, and factory registration.
