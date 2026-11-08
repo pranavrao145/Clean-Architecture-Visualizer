@@ -1,3 +1,5 @@
+import type { GetUseCaseInfoInputData } from './getUseCaseInfoInputData.js';
+
 export interface GetUseCaseInfoInputBoundary {
-  execute(): Promise<void>;
+  execute(inputData: GetUseCaseInfoInputData): Promise<void>;
 }

@@ -1,3 +1,5 @@
+import type { CreateFeatureInputData } from './createFeatureInputData.js';
+
 export interface CreateFeatureInputBoundary {
-  execute(): Promise<void>;
+  execute(inputData: CreateFeatureInputData): Promise<void>;
 }

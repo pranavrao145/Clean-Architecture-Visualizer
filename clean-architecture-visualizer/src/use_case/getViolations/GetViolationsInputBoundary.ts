@@ -1,3 +1,5 @@
+import type { GetViolationsInputData } from './GetViolationsInputData.js';
+
 export interface GetViolationsInputBoundary {
-  execute(): Promise<void>;
+  execute(inputData: GetViolationsInputData): Promise<void>;
 }

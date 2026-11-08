@@ -7,7 +7,8 @@
     "start": "cross-env NODE_ENV=production node ./dist/src/app/index.js",
     "dev": "npm run build && cross-env NODE_ENV=development node ./dist/src/app/index.js start",
     "test": "cross-env NODE_OPTIONS='--experimental-vm-modules' jest --no-cache",
-    "type-check": "tsc -p tsconfig.test.json"
+    "type-check": "tsc -p tsconfig.test.json",
+    "codemod:rename": "node codemods/rename.ts"
   },
   "license": "MIT",
   "bugs": {
@@ -23,6 +24,7 @@
     "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
+    "ts-morph": "^28.0.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.16"
   },

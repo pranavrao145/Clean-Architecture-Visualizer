@@ -23,20 +23,20 @@ describe('CreateFeatureInteractor', () => {
     outputData = new CreateFeatureOutputData();
   });
 
-  function makeInteractor(name: string) {
-    return new CreateFeatureInteractor(
+  function runInteractor(name: string) {
+    const interactor = new CreateFeatureInteractor(
       mockFileAccess,
       mockPresenter,
-      new CreateFeatureInputData(name),
       outputData
     );
+    return interactor.execute(new CreateFeatureInputData(name));
   }
 
   it('Successfully adds feature to features directory.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue('/root/src');
     mockFileAccess.bfsFindDir.mockResolvedValue('/root/src/features');
     mockFileAccess.exists.mockResolvedValue(false);
-    await makeInteractor('new_feature').execute();
+    await runInteractor('new_feature');
 
     expect(mockFileAccess.createDirectory).toHaveBeenCalledWith(
       '/root/src/features/new_feature'
@@ -51,7 +51,7 @@ describe('CreateFeatureInteractor', () => {
     mockFileAccess.getCurrentPath.mockResolvedValue('/root/src');
     mockFileAccess.bfsFindDir.mockResolvedValue('/root/src/features');
     mockFileAccess.exists.mockResolvedValue(false);
-    await makeInteractor('new feature with spaces').execute();
+    await runInteractor('new feature with spaces');
 
     expect(mockFileAccess.createDirectory).toHaveBeenCalledWith(
       '/root/src/features/newfeaturewithspaces'
@@ -65,7 +65,7 @@ describe('CreateFeatureInteractor', () => {
   it('Fails to add feature because features directory does not exist.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue('/root/src');
     mockFileAccess.bfsFindDir.mockResolvedValue(null);
-    await makeInteractor('blah').execute();
+    await runInteractor('blah');
     expect(mockPresenter.showSuccessView).not.toHaveBeenCalled();
     expect(mockPresenter.showFailView).toHaveBeenCalled();
   });
@@ -74,7 +74,7 @@ describe('CreateFeatureInteractor', () => {
     mockFileAccess.getCurrentPath.mockResolvedValue('/root/src');
     mockFileAccess.bfsFindDir.mockResolvedValue('/root/src/features');
     mockFileAccess.exists.mockResolvedValue(true);
-    await makeInteractor('new_feature').execute();
+    await runInteractor('new_feature');
     expect(mockPresenter.showSuccessView).not.toHaveBeenCalled();
     expect(mockPresenter.showFailView).toHaveBeenCalled();
   });
@@ -86,7 +86,7 @@ describe('CreateFeatureInteractor', () => {
     mockFileAccess.createDirectory.mockRejectedValue(
       new Error('Failed to create directory.')
     );
-    await makeInteractor('new_feature').execute();
+    await runInteractor('new_feature');
     expect(mockPresenter.showSuccessView).not.toHaveBeenCalled();
     expect(mockPresenter.showFailView).toHaveBeenCalled();
   });

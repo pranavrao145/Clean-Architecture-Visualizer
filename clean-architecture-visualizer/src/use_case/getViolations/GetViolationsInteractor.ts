@@ -14,14 +14,13 @@ export class GetViolationsInteractor implements GetViolationsInputBoundary {
   constructor(
     private readonly db: SessionDBAccessInterface,
     private readonly fileAccess: FileAccessInterface,
-    private readonly inputData: GetViolationsInputData,
     private readonly outputData: GetViolationsOutputData
   ) {}
 
-  async execute(): Promise<void> {
-    const interactionId = this.inputData.getInteractionId();
+  async execute(inputData: GetViolationsInputData): Promise<void> {
+    const useCaseId = inputData.getUseCaseId();
 
-    const useCase = this.db.getUseCaseById(interactionId);
+    const useCase = this.db.getUseCaseById(useCaseId);
     if (!useCase) return undefined;
     const violations: ViolationEntry[] = await Promise.all(
       useCase.violationEdges.map(async ([from, to], index) => {

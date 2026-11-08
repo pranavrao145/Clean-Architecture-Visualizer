@@ -1,7 +1,7 @@
 export class GetUseCaseInfoInputData {
-  constructor(private readonly interactionId: string) {}
+  constructor(private readonly useCaseId: string) {}
 
-  getInteractionId(): string {
-    return this.interactionId;
+  getUseCaseId(): string {
+    return this.useCaseId;
   }
 }

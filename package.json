@@ -13,7 +13,8 @@
     "format:check": "biome format .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "check:ci": "biome ci ."
+    "check:ci": "biome ci .",
+    "verify": "npm run type-check --prefix clean-architecture-visualizer && npm run type-check --prefix clean-architecture-visualizer/frontend && npm test --prefix clean-architecture-visualizer && npm run test:unit --prefix clean-architecture-visualizer/frontend -- --run && npm run check:ci"
   },
   "license": "MIT",
   "bugs": {

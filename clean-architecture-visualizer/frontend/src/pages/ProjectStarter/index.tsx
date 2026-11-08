@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import {
   useCreateUseCase,
   useGenerateProject,
-} from '../../actions/useTemplate';
+} from '../../actions/use-template';
 import {
   ActionCenter,
   DarkButton,

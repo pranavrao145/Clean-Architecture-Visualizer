@@ -7,7 +7,7 @@ import {
   useCreateUseCase,
   useGenerateModuleProject,
   useGenerateProject,
-} from '@/actions/useTemplate';
+} from '@/actions/use-template';
 import { server } from '@/mocks/server';
 import { renderHook, waitFor } from '../../test-utils';
 

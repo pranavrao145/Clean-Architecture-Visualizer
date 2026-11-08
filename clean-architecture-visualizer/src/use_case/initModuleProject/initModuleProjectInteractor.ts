@@ -9,22 +9,19 @@ export class InitModuleProjectInteractor
 {
   private readonly fileAccess: FileAccessInterface;
   private readonly outputData: InitModuleProjectOutputData;
-  private readonly inputData: InitModuleProjectInputData;
 
   constructor(
     fileAccess: FileAccessInterface,
-    inputData: InitModuleProjectInputData,
     outputData: InitModuleProjectOutputData = new InitModuleProjectOutputData()
   ) {
     this.fileAccess = fileAccess;
     this.outputData = outputData;
-    this.inputData = inputData;
   }
 
-  async execute(): Promise<void> {
+  async execute(inputData: InitModuleProjectInputData): Promise<void> {
     try {
       const acceptedLanguage = ['typescript', 'javascript', 'java', 'python'];
-      const language = this.inputData.getLanguage().trim();
+      const language = inputData.getLanguage().trim();
       if (!acceptedLanguage.includes(language.toLowerCase())) {
         throw new Error(
           'You must enter a valid programming language of: java, python, typescript, or javascript. Blank defaults to Java.'

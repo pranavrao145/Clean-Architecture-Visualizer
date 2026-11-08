@@ -9,13 +9,12 @@ export class CreateUseCaseInteractor implements CreateUseCaseInputBoundary {
   constructor(
     private readonly fileAccess: FileAccessInterface,
     private readonly presenter: CreateUseCaseOutputBoundary,
-    private readonly inputData: CreateUseCaseInputData,
     private readonly outputData: CreateUseCaseOutputData
   ) {}
 
-  async execute(): Promise<void> {
+  async execute(inputData: CreateUseCaseInputData): Promise<void> {
     try {
-      const useCaseName = this.inputData.getUseCaseName().split(' ').join('');
+      const useCaseName = inputData.getUseCaseName().split(' ').join('');
       const currPath = await this.fileAccess.getCurrentPath();
 
       // Find the language directory -- makes assumption only one directory is named after language

@@ -11,15 +11,14 @@ export class CreateModuleUseCaseInteractor
   constructor(
     private readonly fileAccess: FileAccessInterface,
     private readonly presenter: CreateModuleUseCaseOutputBoundary,
-    private readonly inputData: CreateModuleUseCaseInputData,
     private readonly outputData: CreateModuleUseCaseOutputData
   ) {}
 
-  async execute(): Promise<void> {
+  async execute(inputData: CreateModuleUseCaseInputData): Promise<void> {
     try {
       // remove all spaces from use case name and feature name
-      const feature = this.inputData.getFeatureName().split(' ').join('');
-      const usecase = this.inputData.getUseCaseName().split(' ').join('');
+      const feature = inputData.getFeatureName().split(' ').join('');
+      const usecase = inputData.getUseCaseName().split(' ').join('');
       const currPath = await this.fileAccess.getCurrentPath();
       // Find the language directory -- makes assumption only one directory is named after language
       let extension: string | undefined;

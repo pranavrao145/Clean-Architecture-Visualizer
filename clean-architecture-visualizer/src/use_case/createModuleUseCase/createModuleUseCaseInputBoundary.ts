@@ -1,3 +1,5 @@
+import type { CreateModuleUseCaseInputData } from './createModuleUseCaseInputData.js';
+
 export interface CreateModuleUseCaseInputBoundary {
-  execute(): Promise<void>;
+  execute(inputData: CreateModuleUseCaseInputData): Promise<void>;
 }

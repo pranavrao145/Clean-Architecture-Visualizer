@@ -18,18 +18,18 @@ describe('InitModuleProjectInteractor', () => {
     jest.spyOn(mockOutputData, 'setOutputData');
   });
 
-  function makeInteractor(language: string) {
-    return new InitModuleProjectInteractor(
+  function runInteractor(language: string) {
+    const interactor = new InitModuleProjectInteractor(
       mockFileAccess,
-      new InitModuleProjectInputData(language),
       mockOutputData
     );
+    return interactor.execute(new InitModuleProjectInputData(language));
   }
 
   it('Creates CA directory that is packaged by module (src exists) in java.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue(ROOT_PATH);
     mockFileAccess.exists.mockResolvedValue(true);
-    await makeInteractor('Java').execute();
+    await runInteractor('Java');
 
     const expectedDirs = [
       `${ROOT_PATH}/src/main/java`,
@@ -56,7 +56,7 @@ describe('InitModuleProjectInteractor', () => {
   it('Creates CA directory that is packaged by module (src exists) in python.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue(ROOT_PATH);
     mockFileAccess.exists.mockResolvedValue(true);
-    await makeInteractor('python').execute();
+    await runInteractor('python');
 
     const expectedDirs = [
       `${ROOT_PATH}/src/main/python`,
@@ -83,7 +83,7 @@ describe('InitModuleProjectInteractor', () => {
   it('Creates CA directory that is packaged by module (src exists) in javascript.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue(ROOT_PATH);
     mockFileAccess.exists.mockResolvedValue(true);
-    await makeInteractor('javascript').execute();
+    await runInteractor('javascript');
 
     const expectedDirs = [
       `${ROOT_PATH}/src/main/javascript`,
@@ -110,7 +110,7 @@ describe('InitModuleProjectInteractor', () => {
   it('Creates CA directory that is packaged by module (src exists) in typescript.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue(ROOT_PATH);
     mockFileAccess.exists.mockResolvedValue(true);
-    await makeInteractor('typescript').execute();
+    await runInteractor('typescript');
 
     const expectedDirs = [
       `${ROOT_PATH}/src/main/typescript`,
@@ -135,14 +135,14 @@ describe('InitModuleProjectInteractor', () => {
   });
 
   it('Error occurs because the programming language is invalid.', async () => {
-    await makeInteractor('blah blah blah').execute();
+    await runInteractor('blah blah blah');
     expect(mockOutputData.setOutputData).toHaveBeenCalledWith(false);
   });
 
   it('Error occurs because src directory does not exist.', async () => {
     mockFileAccess.getCurrentPath.mockResolvedValue(ROOT_PATH);
     mockFileAccess.exists.mockResolvedValue(false);
-    await makeInteractor('java').execute();
+    await runInteractor('java');
     expect(mockOutputData.setOutputData).toHaveBeenCalledWith(false);
   });
 
@@ -152,13 +152,13 @@ describe('InitModuleProjectInteractor', () => {
       new Error('Permission denied')
     );
 
-    await makeInteractor('java').execute();
+    await runInteractor('java');
     expect(mockOutputData.setOutputData).toHaveBeenCalledWith(false);
   });
 
   it('Handles errors if getCurrentPath fails.', async () => {
     mockFileAccess.getCurrentPath.mockRejectedValue(new Error('Path unknown'));
-    await makeInteractor('java').execute();
+    await runInteractor('java');
 
     // Assert
     expect(mockOutputData.setOutputData).toHaveBeenCalledWith(false);
@@ -170,7 +170,7 @@ describe('InitModuleProjectInteractor', () => {
     mockFileAccess.bfsFindDir.mockResolvedValue(`${ROOT_PATH}/src/main`);
     mockFileAccess.exists.mockResolvedValue(true);
 
-    await makeInteractor('java').execute();
+    await runInteractor('java');
     expect(mockOutputData.setOutputData).toHaveBeenCalledWith(false);
     expect(mockFileAccess.createDirectory).not.toHaveBeenCalled();
   });
@@ -180,7 +180,7 @@ describe('InitModuleProjectInteractor', () => {
     mockFileAccess.bfsFindDir.mockResolvedValue(`${ROOT_PATH}/src/test`);
     mockFileAccess.exists.mockResolvedValue(true);
 
-    await makeInteractor('java').execute();
+    await runInteractor('java');
     expect(mockOutputData.setOutputData).toHaveBeenCalledWith(false);
     expect(mockFileAccess.createDirectory).not.toHaveBeenCalled();
   });

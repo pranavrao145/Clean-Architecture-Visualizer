@@ -16,22 +16,16 @@ import { InitModuleProjectController } from '../interface_adapter/initModuleProj
 import { InitProjectController } from '../interface_adapter/initProject/initProjectController.js';
 import { stopServer } from '../server/server.js';
 import { startCommand } from '../server/startCommand.js';
-import { CreateFeatureInputData } from '../use_case/createFeature/createFeatureInputData.js';
 import { CreateFeatureInteractor } from '../use_case/createFeature/createFeatureInteractor.js';
 import { CreateFeatureOutputData } from '../use_case/createFeature/createFeatureOutputData.js';
-import { CreateModuleUseCaseInputData } from '../use_case/createModuleUseCase/createModuleUseCaseInputData.js';
 import { CreateModuleUseCaseInteractor } from '../use_case/createModuleUseCase/createModuleUseCaseInteractor.js';
 import { CreateModuleUseCaseOutputData } from '../use_case/createModuleUseCase/createModuleUseCaseOutputData.js';
-import { CreateUseCaseInputData } from '../use_case/createUseCase/createUseCaseInputData.js';
 import { CreateUseCaseInteractor } from '../use_case/createUseCase/createUseCaseInteractor.js';
 import { CreateUseCaseOutputData } from '../use_case/createUseCase/createUseCaseOutputData.js';
-import { GraphVerificationInputData } from '../use_case/graphVerification/graphVerificationInputData.js';
 import { GraphVerificationInteractor } from '../use_case/graphVerification/graphVerificationInteractor.js';
 import { GraphVerificationOutputData } from '../use_case/graphVerification/graphVerificationOutputData.js';
-import { InitModuleProjectInputData } from '../use_case/initModuleProject/initModuleProjectInputData.js';
 import { InitModuleProjectInteractor } from '../use_case/initModuleProject/initModuleProjectInteractor.js';
 import { InitModuleProjectOutputData } from '../use_case/initModuleProject/initModuleProjectOutputData.js';
-import { InitProjectInputData } from '../use_case/initProject/initProjectInputData.js';
 import { InitProjectInteractor } from '../use_case/initProject/initProjectInteractor.js';
 import { InitProjectOutputData } from '../use_case/initProject/initProjectOutputData.js';
 
@@ -97,7 +91,6 @@ export class AppBuilder {
 
   async runGraphVerification(): Promise<void> {
     const { fileAccess, cleanArchAccess, db } = this.requireDeps();
-    const inputData = new GraphVerificationInputData(false);
     const outputData = new GraphVerificationOutputData();
     const presenter = new GraphVerificationPresenter(outputData);
     const interactor = new GraphVerificationInteractor(
@@ -106,10 +99,9 @@ export class AppBuilder {
       db,
       presenter,
       [],
-      outputData,
-      inputData
+      outputData
     );
-    await new GraphVerificationController(interactor).execute();
+    await new GraphVerificationController(interactor).execute(false);
   }
 
   /**
@@ -124,7 +116,6 @@ export class AppBuilder {
 
   async runCLIGraphVerification(): Promise<void> {
     const { fileAccess, cleanArchAccess, db } = this.requireDeps();
-    const inputData = new GraphVerificationInputData(true);
     const outputData = new GraphVerificationOutputData();
     const presenter = new GraphVerificationPresenter(outputData);
     const interactor = new GraphVerificationInteractor(
@@ -133,21 +124,18 @@ export class AppBuilder {
       db,
       presenter,
       [],
-      outputData,
-      inputData
+      outputData
     );
-    await new GraphVerificationController(interactor).execute();
+    await new GraphVerificationController(interactor).execute(true);
   }
 
   async runInitProject(language: string): Promise<void> {
-    const inputData = new InitProjectInputData(language);
     const outputData = new InitProjectOutputData();
     const interactor = new InitProjectInteractor(
       this.requireFileAccess(),
-      inputData,
       outputData
     );
-    await new InitProjectController(interactor).execute();
+    await new InitProjectController(interactor).execute(language);
 
     if (outputData.getOutputData()) {
       console.log(chalk.green('Your project has been initialized.'));
@@ -161,14 +149,12 @@ export class AppBuilder {
   }
 
   async runInitModuleProject(language: string): Promise<void> {
-    const inputData = new InitModuleProjectInputData(language);
     const outputData = new InitModuleProjectOutputData();
     const interactor = new InitModuleProjectInteractor(
       this.requireFileAccess(),
-      inputData,
       outputData
     );
-    await new InitModuleProjectController(interactor).execute();
+    await new InitModuleProjectController(interactor).execute(language);
 
     if (outputData.getOutputData()) {
       console.log(
@@ -184,42 +170,36 @@ export class AppBuilder {
   }
 
   async runCreateUseCase(name: string): Promise<void> {
-    const inputData = new CreateUseCaseInputData(name);
     const outputData = new CreateUseCaseOutputData();
     const presenter = new CreateUseCasePresenter(outputData);
     const interactor = new CreateUseCaseInteractor(
       this.requireFileAccess(),
       presenter,
-      inputData,
       outputData
     );
-    await new CreateUseCaseController(interactor).execute();
+    await new CreateUseCaseController(interactor).execute(name);
   }
 
   async runCreateFeature(feature: string): Promise<void> {
-    const inputData = new CreateFeatureInputData(feature);
     const outputData = new CreateFeatureOutputData();
     const presenter = new CreateFeaturePresenter(outputData);
     const interactor = new CreateFeatureInteractor(
       this.requireFileAccess(),
       presenter,
-      inputData,
       outputData
     );
-    await new CreateFeatureController(interactor).execute();
+    await new CreateFeatureController(interactor).execute(feature);
   }
 
   async runCreateModuleUseCase(feature: string, name: string): Promise<void> {
-    const inputData = new CreateModuleUseCaseInputData(feature, name);
     const outputData = new CreateModuleUseCaseOutputData();
     const presenter = new CreateModuleUseCasePresenter(outputData);
     const interactor = new CreateModuleUseCaseInteractor(
       this.requireFileAccess(),
       presenter,
-      inputData,
       outputData
     );
-    await new CreateModuleUseCaseController(interactor).execute();
+    await new CreateModuleUseCaseController(interactor).execute(feature, name);
   }
 
   async runEndProject(): Promise<void> {

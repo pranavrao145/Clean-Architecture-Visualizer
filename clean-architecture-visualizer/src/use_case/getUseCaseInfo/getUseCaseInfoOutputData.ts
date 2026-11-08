@@ -1,4 +1,4 @@
-import type { cleanLayer } from '../../types/cleanLayer.js';
+import type { cleanLayer } from '../../types/clean-layer.js';
 import type { cleanNode } from '../../types/cleanNode.js';
 
 export type UseCaseInfoResponse = {

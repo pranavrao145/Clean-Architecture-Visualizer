@@ -13,10 +13,8 @@ import { GetFilesWithViolationsInteractor } from '../../use_case/getFilesWithVio
 import { GetFilesWithViolationsOutputData } from '../../use_case/getFilesWithViolations/getFilesWithViolationsOutputData.js';
 import { GetProjectSummaryInteractor } from '../../use_case/getProjectSummary/getProjectSummaryInteractor.js';
 import { GetProjectSummaryOutputData } from '../../use_case/getProjectSummary/getProjectSummaryOutputData.js';
-import { GetUseCaseInfoInputData } from '../../use_case/getUseCaseInfo/getUseCaseInfoInputData.js';
 import { GetUseCaseInfoInteractor } from '../../use_case/getUseCaseInfo/getUseCaseInfoInteractor.js';
 import { GetUseCaseInfoOutputData } from '../../use_case/getUseCaseInfo/getUseCaseInfoOutputData.js';
-import { GetViolationsInputData } from '../../use_case/getViolations/GetViolationsInputData.js';
 import { GetViolationsInteractor } from '../../use_case/getViolations/GetViolationsInteractor.js';
 import { GetViolationsOutputData } from '../../use_case/getViolations/GetViolationsOutputData.js';
 
@@ -51,17 +49,12 @@ export function createAnalysisRouter(
   });
 
   router.get('/analysis/interaction/:id', async (req, res) => {
-    const inputData = new GetUseCaseInfoInputData(req.params.id);
     const outputData = new GetUseCaseInfoOutputData();
-    const interactor = new GetUseCaseInfoInteractor(
-      dbAccess,
-      inputData,
-      outputData
-    );
+    const interactor = new GetUseCaseInfoInteractor(dbAccess, outputData);
     const controller = new GetUseCaseInfoController(interactor);
     const presenter = new GetUseCaseInfoPresenter(outputData);
 
-    await controller.execute();
+    await controller.execute(req.params.id);
     const result = presenter.getOutputData();
 
     if (!result) {
@@ -75,18 +68,16 @@ export function createAnalysisRouter(
   });
 
   router.get('/analysis/violations/:interactionId', async (req, res) => {
-    const inputData = new GetViolationsInputData(req.params.interactionId);
     const outputData = new GetViolationsOutputData();
     const interactor = new GetViolationsInteractor(
       dbAccess,
       fileAccess,
-      inputData,
       outputData
     );
     const controller = new GetViolationsController(interactor);
     const presenter = new GetViolationsPresenter(outputData);
 
-    await controller.execute();
+    await controller.execute(req.params.interactionId);
     const result = presenter.getOutputData();
     if (!result) {
       res.status(404).json({

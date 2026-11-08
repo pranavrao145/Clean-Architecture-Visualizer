@@ -1,0 +1,17 @@
+{
+  "files": [
+    {
+      "from": "tests/backend/use_cases/intiProject.test.ts",
+      "to": "tests/backend/use_cases/init-project.test.ts"
+    },
+    {
+      "from": "src/types/cleanLayer.ts",
+      "to": "src/types/clean-layer.ts"
+    },
+    {
+      "from": "frontend/src/actions/useTemplate.ts",
+      "to": "frontend/src/actions/use-template.ts"
+    }
+  ],
+  "identifiers": []
+}

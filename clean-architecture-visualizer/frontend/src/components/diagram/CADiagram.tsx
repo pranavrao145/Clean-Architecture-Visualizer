@@ -4,7 +4,7 @@
 
 import { CircularProgress, Container, Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import type { cleanLayer } from '../../../../src/types/cleanLayer';
+import type { cleanLayer } from '../../../../src/types/clean-layer';
 import type { cleanNode } from '../../../../src/types/cleanNode';
 import { useInteraction } from '../../actions/useAnalysis';
 import type {

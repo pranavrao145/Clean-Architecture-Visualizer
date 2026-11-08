@@ -9,14 +9,13 @@ export class CreateFeatureInteractor implements CreateFeatureInputBoundary {
   constructor(
     private readonly fileAccess: FileAccessInterface,
     private readonly presenter: CreateFeatureOutputBoundary,
-    private readonly inputData: CreateFeatureInputData,
     private readonly outputData: CreateFeatureOutputData
   ) {}
 
-  async execute(): Promise<void> {
+  async execute(inputData: CreateFeatureInputData): Promise<void> {
     try {
       // Want to remove all spaces from the name of the feature
-      const feature = this.inputData.getFeatureName().split(' ').join('');
+      const feature = inputData.getFeatureName().split(' ').join('');
       const currPath = await this.fileAccess.getCurrentPath();
       // If "features" the directory doesn't exist, abort
       const featuresDirectory = await this.fileAccess.bfsFindDir(

@@ -10,7 +10,7 @@ const templateMock = vi.hoisted(() => ({
   createPending: false,
 }));
 
-vi.mock('@/actions/useTemplate', () => ({
+vi.mock('@/actions/use-template', () => ({
   useGenerateProject: () => ({
     mutate: templateMock.generateMutation,
     isPending: templateMock.generatePending,

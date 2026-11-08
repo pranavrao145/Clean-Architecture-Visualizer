@@ -1,3 +1,5 @@
+import type { CreateUseCaseInputData } from './createUseCaseInputData.js';
+
 export interface CreateUseCaseInputBoundary {
-  execute(): Promise<void>;
+  execute(inputData: CreateUseCaseInputData): Promise<void>;
 }

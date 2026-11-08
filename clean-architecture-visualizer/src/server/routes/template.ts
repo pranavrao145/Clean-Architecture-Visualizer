@@ -10,19 +10,14 @@ import { InitModuleProjectController } from '../../interface_adapter/initModuleP
 import { InitModuleProjectPresenter } from '../../interface_adapter/initModuleProject/initModuleProjectPresenter.js';
 import { InitProjectController } from '../../interface_adapter/initProject/initProjectController.js';
 import { InitProjectPresenter } from '../../interface_adapter/initProject/initProjectPresenter.js';
-import { CreateFeatureInputData } from '../../use_case/createFeature/createFeatureInputData.js';
 import { CreateFeatureInteractor } from '../../use_case/createFeature/createFeatureInteractor.js';
 import { CreateFeatureOutputData } from '../../use_case/createFeature/createFeatureOutputData.js';
-import { CreateModuleUseCaseInputData } from '../../use_case/createModuleUseCase/createModuleUseCaseInputData.js';
 import { CreateModuleUseCaseInteractor } from '../../use_case/createModuleUseCase/createModuleUseCaseInteractor.js';
 import { CreateModuleUseCaseOutputData } from '../../use_case/createModuleUseCase/createModuleUseCaseOutputData.js';
-import { CreateUseCaseInputData } from '../../use_case/createUseCase/createUseCaseInputData.js';
 import { CreateUseCaseInteractor } from '../../use_case/createUseCase/createUseCaseInteractor.js';
 import { CreateUseCaseOutputData } from '../../use_case/createUseCase/createUseCaseOutputData.js';
-import { InitModuleProjectInputData } from '../../use_case/initModuleProject/initModuleProjectInputData.js';
 import { InitModuleProjectInteractor } from '../../use_case/initModuleProject/initModuleProjectInteractor.js';
 import { InitModuleProjectOutputData } from '../../use_case/initModuleProject/initModuleProjectOutputData.js';
-import { InitProjectInputData } from '../../use_case/initProject/initProjectInputData.js';
 import { InitProjectInteractor } from '../../use_case/initProject/initProjectInteractor.js';
 import { InitProjectOutputData } from '../../use_case/initProject/initProjectOutputData.js';
 
@@ -30,17 +25,12 @@ const router = Router();
 const fileAccess = new FileAccess();
 
 router.post('/template/generate/:language', async (req, res) => {
-  const inputData = new InitProjectInputData(req.params.language);
   const outputData = new InitProjectOutputData();
-  const interactor = new InitProjectInteractor(
-    fileAccess,
-    inputData,
-    outputData
-  );
+  const interactor = new InitProjectInteractor(fileAccess, outputData);
   const controller = new InitProjectController(interactor);
   const presenter = new InitProjectPresenter(outputData);
 
-  await controller.execute();
+  await controller.execute(req.params.language);
   const result = presenter.getOutputData();
 
   if (!result) {
@@ -52,17 +42,12 @@ router.post('/template/generate/:language', async (req, res) => {
 });
 
 router.post('/template/module_generate/:language', async (req, res) => {
-  const inputData = new InitModuleProjectInputData(req.params.language);
   const outputData = new InitModuleProjectOutputData();
-  const interactor = new InitModuleProjectInteractor(
-    fileAccess,
-    inputData,
-    outputData
-  );
+  const interactor = new InitModuleProjectInteractor(fileAccess, outputData);
   const controller = new InitModuleProjectController(interactor);
   const presenter = new InitModuleProjectPresenter(outputData);
 
-  await controller.execute();
+  await controller.execute(req.params.language);
   const result = presenter.getOutputData();
 
   if (!result) {
@@ -74,18 +59,16 @@ router.post('/template/module_generate/:language', async (req, res) => {
 });
 
 router.post('/template/add/:useCaseName', async (req, res) => {
-  const inputData = new CreateUseCaseInputData(req.params.useCaseName);
   const outputData = new CreateUseCaseOutputData();
   const presenter = new CreateUseCasePresenter(outputData);
   const interactor = new CreateUseCaseInteractor(
     fileAccess,
     presenter,
-    inputData,
     outputData
   );
   const controller = new CreateUseCaseController(interactor);
 
-  await controller.execute();
+  await controller.execute(req.params.useCaseName);
   const result = presenter.getError();
 
   if (result) {
@@ -101,18 +84,16 @@ router.post('/template/add/:useCaseName', async (req, res) => {
 });
 
 router.post('/template/module_add/:featureName', async (req, res) => {
-  const inputData = new CreateFeatureInputData(req.params.featureName);
   const outputData = new CreateFeatureOutputData();
   const presenter = new CreateFeaturePresenter(outputData);
   const interactor = new CreateFeatureInteractor(
     fileAccess,
     presenter,
-    inputData,
     outputData
   );
   const controller = new CreateFeatureController(interactor);
 
-  await controller.execute();
+  await controller.execute(req.params.featureName);
   const result = presenter.getError();
 
   if (result) {
@@ -130,21 +111,16 @@ router.post('/template/module_add/:featureName', async (req, res) => {
 router.post(
   '/template/module_add/:featureName/:useCaseName',
   async (req, res) => {
-    const inputData = new CreateModuleUseCaseInputData(
-      req.params.featureName,
-      req.params.useCaseName
-    );
     const outputData = new CreateModuleUseCaseOutputData();
     const presenter = new CreateModuleUseCasePresenter(outputData);
     const interactor = new CreateModuleUseCaseInteractor(
       fileAccess,
       presenter,
-      inputData,
       outputData
     );
     const controller = new CreateModuleUseCaseController(interactor);
 
-    await controller.execute();
+    await controller.execute(req.params.featureName, req.params.useCaseName);
     const result = presenter.getError();
 
     if (result) {

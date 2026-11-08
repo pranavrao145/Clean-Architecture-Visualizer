@@ -13,7 +13,7 @@ const genericDBAccess = new SessionDBAccess();
 
 function makeInputData(id: string): GetUseCaseInfoInputData {
   return {
-    getInteractionId: () => id,
+    getUseCaseId: () => id,
   } as unknown as GetUseCaseInfoInputData;
 }
 
@@ -33,11 +33,10 @@ describe('GetUseCaseInfoInteractor', () => {
     const outputData = makeOutputData();
     const interactor = new GetUseCaseInfoInteractor(
       genericDBAccess,
-      makeInputData('non-existent'),
       outputData
     );
 
-    await interactor.execute();
+    await interactor.execute(makeInputData('non-existent'));
 
     expect(outputData.getOutputData()).toBeUndefined();
   });
@@ -68,11 +67,10 @@ describe('GetUseCaseInfoInteractor', () => {
     const outputData = makeOutputData();
     const interactor = new GetUseCaseInfoInteractor(
       genericDBAccess,
-      makeInputData('uc-1'),
       outputData
     );
 
-    await interactor.execute();
+    await interactor.execute(makeInputData('uc-1'));
 
     expect(outputData.result.interaction_name).toBe('Create User');
     // Check if node was found via fileKey
@@ -102,11 +100,10 @@ describe('GetUseCaseInfoInteractor', () => {
     const outputData = makeOutputData();
     const interactor = new GetUseCaseInfoInteractor(
       genericDBAccess,
-      makeInputData('uc-1'),
       outputData
     );
 
-    await interactor.execute();
+    await interactor.execute(makeInputData('uc-1'));
 
     const missingNode = outputData.result.nodes.find(
       (n) => n.status === 'MISSING'
@@ -143,11 +140,10 @@ describe('GetUseCaseInfoInteractor', () => {
     const outputData = makeOutputData();
     const interactor = new GetUseCaseInfoInteractor(
       genericDBAccess,
-      makeInputData('uc-edge'),
       outputData
     );
 
-    await interactor.execute();
+    await interactor.execute(makeInputData('uc-edge'));
 
     expect(outputData.result.edges).toHaveLength(1);
     expect(outputData.result.edges[0].id).toBe(edgeId);
@@ -183,11 +179,10 @@ describe('GetUseCaseInfoInteractor', () => {
     const outputData = makeOutputData();
     const interactor = new GetUseCaseInfoInteractor(
       genericDBAccess,
-      makeInputData('uc-edge'),
       outputData
     );
 
-    await interactor.execute();
+    await interactor.execute(makeInputData('uc-edge'));
 
     expect(outputData.result.edges).toHaveLength(1);
     expect(outputData.result.edges[0].id).toBe(edgeId);

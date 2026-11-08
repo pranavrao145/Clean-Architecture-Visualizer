@@ -1,4 +1,4 @@
-import type { cleanLayer } from './cleanLayer.js';
+import type { cleanLayer } from './clean-layer.js';
 import type { cleanNode } from './cleanNode.js';
 import type { neighbourMap } from './neighbourMap.js';
 

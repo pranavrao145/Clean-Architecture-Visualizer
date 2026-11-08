@@ -5,7 +5,7 @@
     "noEmit": true,
     "types": ["node", "@types/jest"]
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "codemods/**/*"],
   // Replaces the inherited exclude, which skips tests/.
   "exclude": ["node_modules", "frontend", "dist"]
 }
