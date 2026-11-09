@@ -31,25 +31,27 @@ State derived choices in the completion summary.
 
 ### Single clarification checkpoint
 
-Ask at most one focused clarification question before editing. Combine all
-genuinely blocking choices into that one question; never ask another
-clarification after the user answers or leaves fields blank.
+Before inferring any topology or semantic verification rules, ask exactly one
+focused clarification question each for the user's direction on:
 
-Use this decision order:
+- the required topology: nodes, edges, names, signatures, modifiers, and
+  relationships;
+- the verification rules: semantic constraints that topology matching alone
+  cannot enforce.
 
-1. If the requested pattern and a conventional topology are recognizable,
-   infer the standard structure and proceed. Blank fields mean “figure it out
-   based off what you know about the design pattern and/or use the conventional choice,” not “ask again.”
-2. If the pattern has multiple materially different conventions, present one
-   recommended default and the alternatives in the single question. If the
-   user leaves the choice blank, use the recommendation.
-3. If the pattern is unfamiliar or cannot be mapped to the CodebaseASG unions,
-   ask once for general shape advice. Do not ask for metadata separately;
-   derive it from the confirmed shape. Do the same for the verification rules.
-4. If the answer remains incomplete, make the safest conventional choice,
-   state the assumption, and continue. Stop only when implementation would
-   require inventing a user-specific name, signature, modifier, or
-   relationship that cannot be inferred.
+Combine these with any genuinely blocking choice between materially different
+pattern variants in the same question. Do not ask another clarification after
+the user answers or leaves fields blank. Blank topology or verification fields
+mean “infer the safest conventional choice after this checkpoint,” not “skip
+the checkpoint.” If the pattern is unfamiliar or cannot be mapped to the
+CodebaseASG unions, derive metadata from the confirmed or inferred shape in the
+required topology question.
+
+After the checkpoint, preserve every user-specified element and never weaken a
+requested rule into a wildcard. For omitted details, infer the conventional
+design-pattern structure and state those derived choices in the completion
+summary. Stop only when implementation would require inventing a user-specific
+name, signature, modifier, or relationship that cannot be inferred.
 
 ## Deterministic workflow
 
