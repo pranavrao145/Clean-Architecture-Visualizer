@@ -1,0 +1,139 @@
+{
+  "class-method": {
+    "description": "One class owning one method.",
+    "nodes": [
+      {
+        "type": "CLASS",
+        "fqn": "$ownerClass",
+        "name": "",
+        "packageName": "",
+        "modifiers": []
+      },
+      {
+        "type": "METHOD",
+        "fqn": "$ownedMethod",
+        "name": "",
+        "parameterFqns": [],
+        "returnTypeFqn": "",
+        "modifiers": []
+      }
+    ],
+    "edges": [
+      {
+        "type": "HAS_METHOD",
+        "ownerFqn": "$ownerClass",
+        "methodFqn": "$ownedMethod"
+      }
+    ]
+  },
+  "class-field": {
+    "description": "One class owning one field.",
+    "nodes": [
+      {
+        "type": "CLASS",
+        "fqn": "$ownerClass",
+        "name": "",
+        "packageName": "",
+        "modifiers": []
+      },
+      {
+        "type": "FIELD",
+        "fqn": "$ownedField",
+        "name": "",
+        "typeFqn": "",
+        "modifiers": []
+      }
+    ],
+    "edges": [
+      {
+        "type": "HAS_FIELD",
+        "ownerFqn": "$ownerClass",
+        "fieldFqn": "$ownedField"
+      }
+    ]
+  },
+  "interface-implementation": {
+    "description": "One interface implemented by one class.",
+    "nodes": [
+      {
+        "type": "INTERFACE",
+        "fqn": "$interface",
+        "name": "",
+        "packageName": "",
+        "modifiers": []
+      },
+      {
+        "type": "CLASS",
+        "fqn": "$implementation",
+        "name": "",
+        "packageName": "",
+        "modifiers": []
+      }
+    ],
+    "edges": [
+      {
+        "type": "IMPLEMENTS",
+        "interfaceFqn": "$interface",
+        "implementingClassFqn": "$implementation"
+      }
+    ]
+  },
+  "inheritance": {
+    "description": "One child class extending one parent class.",
+    "nodes": [
+      {
+        "type": "CLASS",
+        "fqn": "$parentClass",
+        "name": "",
+        "packageName": "",
+        "modifiers": []
+      },
+      {
+        "type": "CLASS",
+        "fqn": "$childClass",
+        "name": "",
+        "packageName": "",
+        "modifiers": []
+      }
+    ],
+    "edges": [
+      {
+        "type": "EXTENDS",
+        "parentClassFqn": "$parentClass",
+        "childClassFqn": "$childClass"
+      }
+    ]
+  },
+  "method-call": {
+    "description": "One method calling another method.",
+    "nodes": [
+      {
+        "type": "METHOD",
+        "fqn": "$callingMethod",
+        "name": "",
+        "parameterFqns": [],
+        "returnTypeFqn": "",
+        "modifiers": []
+      },
+      {
+        "type": "METHOD",
+        "fqn": "$calledMethod",
+        "name": "",
+        "parameterFqns": [],
+        "returnTypeFqn": "",
+        "modifiers": []
+      }
+    ],
+    "edges": [
+      {
+        "type": "CALLS",
+        "callingMethodFqn": "$callingMethod",
+        "calledMethodFqn": "$calledMethod",
+        "targetObjectFqn": "",
+        "insideLoop": false,
+        "insideConditional": false,
+        "isConstructorCall": false
+      }
+    ]
+  }
+}
