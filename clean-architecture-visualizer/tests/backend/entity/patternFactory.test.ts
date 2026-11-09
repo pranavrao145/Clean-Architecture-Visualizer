@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import { CodebaseASG } from '../../../src/entity/CodebaseASG.js';
+import { AbstractFactoryDesignPattern } from '../../../src/entity/AbstractFactoryDesignPattern.js';
 import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.js';
 import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
@@ -21,6 +22,20 @@ const singletonDefinition: PatternDefinition = {
   },
 };
 
+const abstractFactoryDefinition: PatternDefinition = {
+  id: PatternId.AbstractFactory,
+  metadata: {
+    patternName: PatternName.AbstractFactory,
+    patternType: PatternType.DesignPattern,
+    description: 'description',
+    learningInfo: 'learning info',
+  },
+  candidateTopology: {
+    nodes: [],
+    edges: [],
+  },
+};
+
 describe('CommonPatternFactory', () => {
   it('creates the Singleton design pattern', async () => {
     const pattern = await new CommonPatternFactory().create(
@@ -32,6 +47,15 @@ describe('CommonPatternFactory', () => {
     expect(pattern.data.metadata.patternName).toBe(PatternName.Singleton);
     expect(pattern.data.metadata.patternType).toBe(PatternType.DesignPattern);
     expect(pattern.candidateVerification(new CodebaseASG([], []))).toBe(false);
+  });
+
+  it('creates the Abstract Factory design pattern', async () => {
+    const pattern = await new CommonPatternFactory().create(
+      PatternId.AbstractFactory,
+      abstractFactoryDefinition
+    );
+
+    expect(pattern).toBeInstanceOf(AbstractFactoryDesignPattern);
   });
 
   it('rejects unknown pattern IDs', async () => {

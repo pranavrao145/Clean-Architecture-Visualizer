@@ -45,4 +45,36 @@
             ]
         }
     }
+    ,
+    "abstractfactory": {
+        "metadata": {
+            "patternName": "Abstract Factory",
+            "patternType": "Design Pattern",
+            "description": "Creational design pattern that provides an interface for creating families of related objects without specifying their concrete classes.",
+            "learningInfo": "Use an Abstract Factory when clients must create compatible product families while remaining independent of concrete implementations."
+        },
+        "candidateTopology": {
+            "nodes": [
+                {"type": "INTERFACE", "fqn": "$abstractFactory", "name": "", "packageName": "", "modifiers": []},
+                {"type": "INTERFACE", "fqn": "$abstractProductA", "name": "", "packageName": "", "modifiers": []},
+                {"type": "INTERFACE", "fqn": "$abstractProductB", "name": "", "packageName": "", "modifiers": []},
+                {"type": "CLASS", "fqn": "$concreteFactory", "name": "", "packageName": "", "modifiers": []},
+                {"type": "CLASS", "fqn": "$concreteProductA", "name": "", "packageName": "", "modifiers": []},
+                {"type": "CLASS", "fqn": "$concreteProductB", "name": "", "packageName": "", "modifiers": []},
+                {"type": "METHOD", "fqn": "$abstractCreateA", "name": "", "parameterFqns": [], "returnTypeFqn": "$abstractProductA", "modifiers": []},
+                {"type": "METHOD", "fqn": "$abstractCreateB", "name": "", "parameterFqns": [], "returnTypeFqn": "$abstractProductB", "modifiers": []},
+                {"type": "METHOD", "fqn": "$concreteCreateA", "name": "", "parameterFqns": [], "returnTypeFqn": "$abstractProductA", "modifiers": []},
+                {"type": "METHOD", "fqn": "$concreteCreateB", "name": "", "parameterFqns": [], "returnTypeFqn": "$abstractProductB", "modifiers": []}
+            ],
+            "edges": [
+                {"type": "IMPLEMENTS", "interfaceFqn": "$abstractFactory", "implementingClassFqn": "$concreteFactory"},
+                {"type": "IMPLEMENTS", "interfaceFqn": "$abstractProductA", "implementingClassFqn": "$concreteProductA"},
+                {"type": "IMPLEMENTS", "interfaceFqn": "$abstractProductB", "implementingClassFqn": "$concreteProductB"},
+                {"type": "HAS_METHOD", "ownerFqn": "$abstractFactory", "methodFqn": "$abstractCreateA"},
+                {"type": "HAS_METHOD", "ownerFqn": "$abstractFactory", "methodFqn": "$abstractCreateB"},
+                {"type": "HAS_METHOD", "ownerFqn": "$concreteFactory", "methodFqn": "$concreteCreateA"},
+                {"type": "HAS_METHOD", "ownerFqn": "$concreteFactory", "methodFqn": "$concreteCreateB"}
+            ]
+        }
+    }
 }
