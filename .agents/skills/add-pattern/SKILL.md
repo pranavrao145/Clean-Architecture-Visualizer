@@ -26,12 +26,32 @@ derived safely, ask for it before editing:
 
 Preserve user-specified names, modifiers, signatures, relationships, and
 verification rules. Never silently weaken a requested rule into a wildcard.
+Do not infer a concrete topology from a broad pattern label. Names such as
+"Factory", "Adapter", or "Observer" can refer to multiple variants.
+
+## Clarification gate
+
+Before reading broad repository context, determine whether the request supplies
+all required inputs. If the pattern name has multiple common variants, ask a
+focused structured question that:
+
+1. offers the likely variants;
+2. asks for the required nodes, edges, names/signatures/modifiers, and semantic
+   verification rules; and
+3. proposes a repository-compatible default only when it can be stated
+   completely.
+
+If the user's answers conflict (for example, one variant is selected but rules
+describe another), ask one follow-up choice and stop until the conflict is
+resolved. Selecting a variant does not confirm an invented topology: explicitly
+confirm any proposed topology and verification defaults before editing.
 
 ## Deterministic workflow
 
-1. Read [the pattern lifecycle](../../../docs/developers/Patterns.md),
-   [the glossary](../../../GLOSSARY.md), and the existing
-   `SingletonDesignPattern` implementation before editing.
+1. After clarification, read [the pattern lifecycle](../../../docs/developers/Patterns.md)
+   and the existing `SingletonDesignPattern` implementation. Read
+   [the glossary](../../../GLOSSARY.md) only when the request uses CAVE-specific
+   terminology whose meaning is ambiguous.
 2. Inspect the node and edge unions in
    `clean-architecture-visualizer/src/types/`. Use only their exact property
    names and modifier literals.
@@ -41,7 +61,10 @@ verification rules. Never silently weaken a requested rule into a wildcard.
    when the user requests an exact value.
    Use [the metadata starter](./assets/pattern-definition.template.json) for
    the JSON entry.
-4. Update all registration surfaces in one change:
+   If no preset matches, compose the topology directly from the clarified
+   requirements; do not broaden a preset to make it fit.
+4. Inspect the existing pattern tests and registration files in one focused
+   read batch, then update all registration surfaces in one change:
    - `clean-architecture-visualizer/src/database/patterns.json`
    - `clean-architecture-visualizer/src/entity/PatternId.ts`
    - `clean-architecture-visualizer/src/entity/PatternName.ts`
@@ -61,6 +84,10 @@ verification rules. Never silently weaken a requested rule into a wildcard.
 7. Run the smallest relevant checks from `clean-architecture-visualizer`:
    `npm test -- --runInBand <relevant-test-file>` when tests exist, then
    `npm run type-check`. Report commands and outcomes explicitly.
+   Run commands from the `clean-architecture-visualizer` directory. If the
+   full type-check exposes unrelated baseline errors, run a source-only
+   TypeScript check when available and report both results; do not edit
+   unrelated tests just to make validation green.
 
 ## Topology rules
 
