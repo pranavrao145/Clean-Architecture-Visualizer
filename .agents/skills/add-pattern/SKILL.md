@@ -78,9 +78,21 @@ confirm any proposed topology and verification defaults before editing.
    `candidateVerification` must check candidate cardinality, node kinds,
    semantic values, exact modifiers where required, and required typed edges.
    Keep JSON and data-access concerns out of the entity.
-6. Add focused tests beside the repository's existing tests when a test
-   location is found. Cover candidate identification from the topology and
-   candidate verification, including at least one near-miss that must fail.
+6. Add focused tests beside the repository's existing tests. In this
+   repository, create
+   `clean-architecture-visualizer/tests/backend/entity/<name>Pattern.test.ts`
+   using the existing `pattern.test.ts` style. The test file must:
+   - construct a typed `PatternDefinition` for the new pattern;
+   - build a minimal positive `CodebaseASG` with every topology node and edge;
+   - verify `candidateIdentification` returns the expected candidate;
+   - verify `candidateVerification` accepts the positive candidate; and
+   - verify at least one near-miss is rejected (wrong semantic value,
+     modifier, node kind, cardinality, or edge direction).
+   Also add a factory construction test to
+   `clean-architecture-visualizer/tests/backend/entity/patternFactory.test.ts`
+   when that shared registry test exists. If the repository uses a different
+   test layout, locate its analogous pattern and factory tests and follow
+   their naming/style instead of inventing a parallel structure.
 7. Run the smallest relevant checks from `clean-architecture-visualizer`:
    `npm test -- --runInBand <relevant-test-file>` when tests exist, then
    `npm run type-check`. Report commands and outcomes explicitly.
@@ -112,10 +124,26 @@ confirm any proposed topology and verification defaults before editing.
 
 ## Completion checklist
 
-- [ ] Metadata, topology, enums, concrete entity, and factory registration are
-      all present and consistent.
+- [ ] `clean-architecture-visualizer/src/database/patterns.json` contains the
+      metadata and candidate topology.
+- [ ] `clean-architecture-visualizer/src/entity/PatternId.ts` contains the
+      matching lowercase ID.
+- [ ] `clean-architecture-visualizer/src/entity/PatternName.ts` contains the
+      matching PascalCase name.
+- [ ] `clean-architecture-visualizer/src/entity/PatternType.ts` is updated
+      only when the requested type is new.
+- [ ] `clean-architecture-visualizer/src/entity/<Name>DesignPattern.ts`
+      contains constructor identity checks and complete candidate verification.
+- [ ] `clean-architecture-visualizer/src/entity/CommonPatternFactory.ts`
+      registers the new `PatternId` with the concrete entity.
+- [ ] `clean-architecture-visualizer/tests/backend/entity/<name>Pattern.test.ts`
+      covers typed definition setup, topology identification, positive
+      verification, and at least one negative near-miss; if the repository has
+      no analogous test location, the summary explains why.
+- [ ] `clean-architecture-visualizer/tests/backend/entity/patternFactory.test.ts`
+      covers factory construction when that shared registry test exists.
 - [ ] Every requested topology element and verification rule is represented.
-- [ ] Positive and negative verification behavior is tested where possible.
 - [ ] Type-check and targeted tests pass, or failures are reported without
-      hiding them.
-- [ ] The user-facing summary links every changed file.
+      hiding them, including the exact commands and outcomes.
+- [ ] The final summary links every changed file, including all files listed
+      above that were touched for this pattern.
