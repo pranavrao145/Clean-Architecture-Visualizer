@@ -10,10 +10,9 @@ Create a complete, registered pattern from the user's requested pattern
 elements. Do not only describe the changes: edit the repository and validate
 the result.
 
-## Required inputs
+## Inputs and inference
 
-Extract these values from the request. If a value is missing and cannot be
-derived safely, ask for it before editing:
+Extract these values from the request:
 
 - `id`: lowercase kebab-free identifier used by `PatternId` and `patterns.json`.
 - `name`: PascalCase display name used by `PatternName` and the concrete class.
@@ -26,25 +25,31 @@ derived safely, ask for it before editing:
 
 Preserve user-specified names, modifiers, signatures, relationships, and
 verification rules. Never silently weaken a requested rule into a wildcard.
-Do not infer a concrete topology from a broad pattern label. Names such as
-"Factory", "Adapter", or "Observer" can refer to multiple variants.
+Derive omitted descriptions, learning information, conventional names, and
+standard design-pattern structure from established design-pattern knowledge.
+State derived choices in the completion summary.
 
-## Clarification gate
+### Single clarification checkpoint
 
-Before reading broad repository context, determine whether the request supplies
-all required inputs. If the pattern name has multiple common variants, ask a
-focused structured question that:
+Ask at most one focused clarification question before editing. Combine all
+genuinely blocking choices into that one question; never ask another
+clarification after the user answers or leaves fields blank.
 
-1. offers the likely variants;
-2. asks for the required nodes, edges, names/signatures/modifiers, and semantic
-   verification rules; and
-3. proposes a repository-compatible default only when it can be stated
-   completely.
+Use this decision order:
 
-If the user's answers conflict (for example, one variant is selected but rules
-describe another), ask one follow-up choice and stop until the conflict is
-resolved. Selecting a variant does not confirm an invented topology: explicitly
-confirm any proposed topology and verification defaults before editing.
+1. If the requested pattern and a conventional topology are recognizable,
+   infer the standard structure and proceed. Blank fields mean “figure it out
+   based off what you know about the design pattern and/or use the conventional choice,” not “ask again.”
+2. If the pattern has multiple materially different conventions, present one
+   recommended default and the alternatives in the single question. If the
+   user leaves the choice blank, use the recommendation.
+3. If the pattern is unfamiliar or cannot be mapped to the CodebaseASG unions,
+   ask once for general shape advice. Do not ask for metadata separately;
+   derive it from the confirmed shape. Do the same for the verification rules.
+4. If the answer remains incomplete, make the safest conventional choice,
+   state the assumption, and continue. Stop only when implementation would
+   require inventing a user-specific name, signature, modifier, or
+   relationship that cannot be inferred.
 
 ## Deterministic workflow
 
@@ -55,6 +60,9 @@ confirm any proposed topology and verification defaults before editing.
 2. Inspect the node and edge unions in
    `clean-architecture-visualizer/src/types/`. Use only their exact property
    names and modifier literals.
+   Inspect only the relevant unions and nearby tests after the pattern shape
+   is known; do not repeat broad repository searches or reopen files already
+   read to answer the same question.
 3. Choose the smallest matching starter from
    [topology presets](./assets/pattern-topology-presets.json). Treat preset
    empty strings and empty arrays as intentional wildcards; replace them only
@@ -96,10 +104,10 @@ confirm any proposed topology and verification defaults before editing.
 7. Run the smallest relevant checks from `clean-architecture-visualizer`:
    `npm test -- --runInBand <relevant-test-file>` when tests exist, then
    `npm run type-check`. Report commands and outcomes explicitly.
-   Run commands from the `clean-architecture-visualizer` directory. If the
-   full type-check exposes unrelated baseline errors, run a source-only
-   TypeScript check when available and report both results; do not edit
-   unrelated tests just to make validation green.
+
+Do not pause for optional metadata. Fill it from the confirmed pattern shape,
+and do not create a second clarification round to refine an answer that was
+blank or accepted.
 
 ## Topology rules
 
