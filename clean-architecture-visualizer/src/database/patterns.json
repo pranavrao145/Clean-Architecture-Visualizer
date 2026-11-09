@@ -48,7 +48,7 @@
     ,
     "abstractfactory": {
         "metadata": {
-            "patternName": "AbstractFactory",
+            "patternName": "Abstract Factory",
             "patternType": "Design Pattern",
             "description": "Creational design pattern that provides an interface for creating families of related objects without specifying their concrete classes.",
             "learningInfo": "Use an Abstract Factory when clients must create compatible product families while remaining independent of concrete implementations."
