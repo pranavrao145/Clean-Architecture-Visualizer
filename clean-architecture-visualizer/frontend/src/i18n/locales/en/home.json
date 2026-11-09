@@ -13,8 +13,8 @@
       "cta": "Check now"
     },
     "designPatterns": {
-      "title": "Design Pattern Checker",
-      "description": "Inspect the parsed structure of your codebase.",
+      "title": "Design Pattern Analyzer",
+      "description": "Detect design patterns in your codebase and see them on a class diagram.",
       "badge": "DESIGN PATTERNS",
       "cta": "Inspect now"
     },

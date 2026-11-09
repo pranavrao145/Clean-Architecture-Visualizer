@@ -1,0 +1,29 @@
+{
+  "title": "Design Pattern Checker",
+  "reAnalyze": "Re-analyze",
+  "error": "Could not analyze the codebase.",
+  "noPatternSelected": "Select at least one pattern to analyze.",
+  "detected": "Detected:",
+  "noneDetected": "No patterns detected.",
+  "empty": "No classes found in this codebase.",
+  "diagramLabel": "UML class diagram",
+  "legend": {
+    "selected": "Selected pattern",
+    "unselected": "Other pattern",
+    "antiPattern": "Anti-pattern"
+  },
+  "tabs": {
+    "label": "Pattern details",
+    "code": "Code",
+    "learn": "Learn"
+  },
+  "code": {
+    "note": "Outline built from the parsed code, so method bodies and parameter names aren't shown.",
+    "selectClass": "Select a class in the diagram to see its code."
+  },
+  "learn": {
+    "whatIs": "What is",
+    "inYourCode": "In your code",
+    "selectPattern": "Select a detected pattern to learn about it."
+  }
+}
