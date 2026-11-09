@@ -1,0 +1,14 @@
+{
+  "<id>": {
+    "metadata": {
+      "patternName": "<Name>",
+      "patternType": "Design Pattern",
+      "description": "<Short user-facing description>",
+      "learningInfo": "<Why and when this pattern is useful>"
+    },
+    "candidateTopology": {
+      "nodes": [],
+      "edges": []
+    }
+  }
+}
