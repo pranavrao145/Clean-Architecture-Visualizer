@@ -54,23 +54,23 @@ describe('AbstractFactoryDesignPattern', () => {
     expect(pattern.candidateVerification(matches[0])).toBe(true);
   });
 
-  it('rejects a candidate with a non-factory method name', () => {
+  it('rejects a candidate with a non-public creation method', () => {
     const invalidNodes = nodes.map((node) =>
       node.type === 'METHOD' && node.fqn === 'example.ConcreteFactory.createProductA'
-        ? { ...node, name: 'buildProductA' }
+        ? { ...node, modifiers: ['PRIVATE'] as const }
         : node
     );
 
     expect(pattern.candidateVerification(new CodebaseASG(invalidNodes, edges))).toBe(false);
   });
 
-  it('rejects a candidate with a reversed implementation edge', () => {
-    const invalidEdges = edges.map((edge) =>
-      edge.type === 'IMPLEMENTS' && edge.interfaceFqn === 'example.AbstractFactory'
-        ? { ...edge, interfaceFqn: 'example.ConcreteFactory', implementingClassFqn: 'example.AbstractFactory' }
-        : edge
+  it('rejects a candidate whose creation method returns a concrete product', () => {
+    const invalidNodes = nodes.map((node) =>
+      node.type === 'METHOD' && node.fqn === 'example.ConcreteFactory.createProductA'
+        ? { ...node, returnTypeFqn: 'example.ConcreteProductA' }
+        : node
     );
 
-    expect(pattern.candidateVerification(new CodebaseASG(nodes, invalidEdges))).toBe(false);
+    expect(pattern.candidateVerification(new CodebaseASG(invalidNodes, edges))).toBe(false);
   });
 });

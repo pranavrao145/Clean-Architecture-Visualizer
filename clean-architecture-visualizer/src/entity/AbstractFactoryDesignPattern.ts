@@ -1,9 +1,4 @@
 import type {
-  HasMethodEdge,
-  ImplementsEdge,
-} from '../types/codebaseASGEdges.js';
-import type {
-  ClassNode,
   InterfaceNode,
   MethodNode,
 } from '../types/codebaseASGNodes.js';
@@ -39,119 +34,59 @@ export class AbstractFactoryDesignPattern extends Pattern {
 
   candidateVerification(candidateASG: CodebaseASG): boolean {
     const nodes = candidateASG.getNodes();
-    const edges = candidateASG.getEdges();
-    if (nodes.length !== 10 || edges.length !== 7) {
-      return false;
-    }
-
-    const factoryInterface = this.findInterface(nodes, 'AbstractFactory');
-    const productAInterface = this.findInterface(nodes, 'AbstractProductA');
-    const productBInterface = this.findInterface(nodes, 'AbstractProductB');
-    const concreteFactory = this.findClass(nodes, 'ConcreteFactory');
-    const concreteProductA = this.findClass(nodes, 'ConcreteProductA');
-    const concreteProductB = this.findClass(nodes, 'ConcreteProductB');
-    const abstractCreateA = this.findMethod(nodes, 'createProductA', factoryInterface);
-    const abstractCreateB = this.findMethod(nodes, 'createProductB', factoryInterface);
-    const concreteCreateA = this.findMethod(nodes, 'createProductA', concreteFactory);
-    const concreteCreateB = this.findMethod(nodes, 'createProductB', concreteFactory);
-
-    if (
-      !factoryInterface ||
-      !productAInterface ||
-      !productBInterface ||
-      !concreteFactory ||
-      !concreteProductA ||
-      !concreteProductB ||
-      !abstractCreateA ||
-      !abstractCreateB ||
-      !concreteCreateA ||
-      !concreteCreateB
-    ) {
-      return false;
-    }
-
-    return (
-      this.hasImplementation(edges, factoryInterface, concreteFactory) &&
-      this.hasImplementation(edges, productAInterface, concreteProductA) &&
-      this.hasImplementation(edges, productBInterface, concreteProductB) &&
-      this.hasMethod(edges, factoryInterface, abstractCreateA) &&
-      this.hasMethod(edges, factoryInterface, abstractCreateB) &&
-      this.hasMethod(edges, concreteFactory, concreteCreateA) &&
-      this.hasMethod(edges, concreteFactory, concreteCreateB) &&
-      this.isFactoryMethod(abstractCreateA, productAInterface) &&
-      this.isFactoryMethod(abstractCreateB, productBInterface) &&
-      this.isFactoryMethod(concreteCreateA, productAInterface) &&
-      this.isFactoryMethod(concreteCreateB, productBInterface)
+    // Identify interfaces, creation methods, and which interfaces represent
+    //  the abstract factory versus its abstract products.
+    const interfaces = nodes.filter(
+      (node): node is InterfaceNode => node.type === 'INTERFACE'
     );
-  }
-
-  private findInterface(
-    nodes: CodebaseASG['nodes'],
-    name: string
-  ): InterfaceNode | undefined {
-    return nodes.find(
-      (node): node is InterfaceNode =>
-        node.type === 'INTERFACE' && node.name === name
-    );
-  }
-
-  private findClass(
-    nodes: CodebaseASG['nodes'],
-    name: string
-  ): ClassNode | undefined {
-    return nodes.find(
-      (node): node is ClassNode => node.type === 'CLASS' && node.name === name
-    );
-  }
-
-  private findMethod(
-    nodes: CodebaseASG['nodes'],
-    name: string,
-    owner: InterfaceNode | ClassNode | undefined
-  ): MethodNode | undefined {
-    if (!owner) {
-      return undefined;
-    }
-    return nodes.find(
+    const factoryMethods = nodes.filter(
       (node): node is MethodNode =>
-        node.type === 'METHOD' &&
-        node.name === name &&
-        node.fqn.startsWith(`${owner.fqn}.`) &&
-        node.returnTypeFqn !== '' &&
-        node.parameterFqns.length === 0
+        node.type === 'METHOD' && node.name.startsWith('create')
     );
+    const factoryInterfaces = interfaces.filter((factory) =>
+      factoryMethods.some((method) => method.fqn.startsWith(`${factory.fqn}.`))
+    );
+    const productInterfaces = interfaces.filter(
+      (product) => !factoryInterfaces.includes(product)
+    );
+    const abstractFactoryMethods = factoryMethods.filter((method) =>
+      factoryInterfaces.some((factory) =>
+        method.fqn.startsWith(`${factory.fqn}.`)
+      )
+    );
+
+    // A factory must expose creation methods and return abstract products.
+    if (factoryMethods.length === 0 || productInterfaces.length === 0) {
+      return false;
+    }
+
+    // Every abstract factory method must have a concrete factory counterpart
+    //  that creates the same product family member.
+    return factoryMethods.every((method) => this.isFactoryMethod(method, productInterfaces)) &&
+      abstractFactoryMethods.every((method) =>
+        factoryMethods.some(
+          (concreteMethod) =>
+            concreteMethod !== method &&
+            concreteMethod.name === method.name &&
+            concreteMethod.returnTypeFqn === method.returnTypeFqn &&
+            concreteMethod.fqn !== method.fqn
+        )
+      );
   }
 
-  private isFactoryMethod(method: MethodNode, product: InterfaceNode): boolean {
+  private isFactoryMethod(
+    method: MethodNode,
+    productInterfaces: InterfaceNode[]
+  ): boolean {
+    // Creation methods are public, parameterless, non-static API methods whose
+    //  return types are abstract product interfaces.
     return (
-      this.hasExactlyModifiers(method.modifiers, ['PUBLIC']) &&
-      method.returnTypeFqn === product.fqn
-    );
-  }
-
-  private hasImplementation(
-    edges: CodebaseASG['edges'],
-    interfaceNode: InterfaceNode,
-    classNode: ClassNode
-  ): boolean {
-    return edges.some(
-      (edge): edge is ImplementsEdge =>
-        edge.type === 'IMPLEMENTS' &&
-        edge.interfaceFqn === interfaceNode.fqn &&
-        edge.implementingClassFqn === classNode.fqn
-    );
-  }
-
-  private hasMethod(
-    edges: CodebaseASG['edges'],
-    owner: InterfaceNode | ClassNode,
-    method: MethodNode
-  ): boolean {
-    return edges.some(
-      (edge): edge is HasMethodEdge =>
-        edge.type === 'HAS_METHOD' &&
-        edge.ownerFqn === owner.fqn &&
-        edge.methodFqn === method.fqn
+      method.parameterFqns.length === 0 &&
+      method.modifiers.includes('PUBLIC') &&
+      !method.modifiers.some((modifier) =>
+        ['PRIVATE', 'PROTECTED', 'STATIC', 'FINAL'].includes(modifier)
+      ) &&
+      productInterfaces.some((product) => product.fqn === method.returnTypeFqn)
     );
   }
 }
