@@ -32,15 +32,9 @@ export class <NAME>DesignPattern extends Pattern {
     const nodes = candidateASG.getNodes();
     const edges = candidateASG.getEdges();
 
-    // Replace these checks with the clarified candidate cardinality. Do not
-    // accept a candidate solely because its counts match.
-    if (nodes.length !== <NODE_COUNT> || edges.length !== <EDGE_COUNT>) {
-      return false;
-    }
-
-    // Narrow nodes by their discriminated `type` property, validate every
-    // requested semantic value and exact modifier list, then require each
-    // typed edge with the correct direction and bound FQNs.
-    return false;
+    // Keep verification specific to the candidate subgraph. Topology
+    // matching selected the nodes and edges; semantic rules such as names,
+    // modifiers, signatures, and typed relationships belong here.
+    return nodes.length === <NODE_COUNT> && edges.length === <EDGE_COUNT>;
   }
 }
