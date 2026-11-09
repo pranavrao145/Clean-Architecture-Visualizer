@@ -3,8 +3,8 @@
     "metadata": {
       "patternName": "<Name>",
       "patternType": "Design Pattern",
-      "description": "<Short user-facing description>",
-      "learningInfo": "<Why and when this pattern is useful>"
+      "description": "<Derived short user-facing description>",
+      "learningInfo": "<Derived explanation of why and when this pattern is useful>"
     },
     "candidateTopology": {
       "nodes": [],
