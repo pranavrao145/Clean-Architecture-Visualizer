@@ -132,7 +132,10 @@ registration with the new pattern you are adding.
 4. Register the new concrete class in
    `clean-architecture-visualizer/src/entity/CommonPatternFactory.ts` so the
    runtime factory can construct it for its `PatternId`.
-5. Add or update tests and run the relevant backend test suite. Verify both
+5. Add the pattern to `AVAILABLE_PATTERNS` in
+   `clean-architecture-visualizer/frontend/src/lib/pattern-analyzer-view-model.ts`
+   so users can choose it on the Design Pattern Checker page.
+6. Add or update tests and run the relevant backend test suite. Verify both
    candidate identification from the JSON topology and candidate verification
    behavior.
 

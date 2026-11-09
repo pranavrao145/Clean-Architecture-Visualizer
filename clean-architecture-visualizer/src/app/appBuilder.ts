@@ -109,9 +109,14 @@ export class AppBuilder {
    * same session DB that verification just populated.
    */
   async runStart(backendOnly: boolean): Promise<void> {
-    const { db, javaParserCliAccess } = this.requireDeps();
+    const { db, javaParserCliAccess, patternsAccess } = this.requireDeps();
     await this.runGraphVerification();
-    await startCommand({ backendOnly, db, javaParserCliAccess });
+    await startCommand({
+      backendOnly,
+      db,
+      javaParserCliAccess,
+      patternsAccess,
+    });
   }
 
   async runCLIGraphVerification(): Promise<void> {

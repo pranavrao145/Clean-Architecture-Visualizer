@@ -530,3 +530,99 @@ import usecase1Presenter.java;
     }
     ```
 </details>
+
+### `/api/design-patterns/analyze`
+
+Accepted Request: POST
+
+Analyses the Java code in the current project and detects the chosen design patterns. Each call runs a new analysis, so the response reflects the code as it is now.
+
+The request body lists the patterns to detect. The only pattern available for now is 'singleton'.
+
+```json
+{
+  "patternIds": ["singleton"]
+}
+```
+
+`patternIds` is required. An empty list is allowed: you get the class diagram with no patterns detected.
+
+The information returned is a UML class diagram of the project, plus the patterns found in it:
+
+- `classes`: One entry for each class, interface, and enum. Each includes its fully qualified name (`fqn`), `name`, `kind` ('class', 'interface', 'enum'), its opening declaration (`codeText`), and its `members`. Each member includes its `fqn`, `kind` ('field', 'method', 'constant'), its UML notation (`umlText`), and its Java-like declaration (`codeText`).
+- `relationships`: One entry for each arrow between two classes in the project. Each includes its `id`, `kind` ('extends', 'implements', 'association'), and the classes it runs between (`fromFqn`, `toFqn`). An 'association' means the first class has a field whose type is the second class. Classes from outside the project, such as `java.util.List`, get no arrow.
+- `patternInstances`: One entry for each place a pattern was detected. Each includes its `id`, details of the pattern (`patternId`, `patternName`, `patternType`, `description`, `learningInfo`), and the classes and members that make it up (`classFqns`, `memberFqns`).
+
+Classes, members, and relationships also each have a `patternInstanceIds` list, which holds the `id` of every detected instance they take part in. The list is empty for anything outside a detected pattern.
+
+<details>
+    <summary>Suppose the project contained a singleton `Logger` that extends a class called `Base`. The following is the expected result, shortened to the `Logger` class:</summary>
+
+```json
+{
+  "classes": [
+    {
+      "fqn": "app.core.Logger",
+      "name": "Logger",
+      "kind": "class",
+      "codeText": "public final class Logger {",
+      "members": [
+        {
+          "fqn": "app.core.Logger.instance",
+          "kind": "field",
+          "umlText": "- instance: Logger {static}",
+          "codeText": "private static Logger instance;",
+          "patternInstanceIds": ["singleton-0"]
+        },
+        {
+          "fqn": "app.core.Logger.getInstance()",
+          "kind": "method",
+          "umlText": "+ getInstance(): Logger {static}",
+          "codeText": "public static Logger getInstance();",
+          "patternInstanceIds": ["singleton-0"]
+        },
+        {
+          "fqn": "app.core.Logger.area()",
+          "kind": "method",
+          "umlText": "+ area(): double",
+          "codeText": "public double area();",
+          "patternInstanceIds": []
+        }
+      ],
+      "patternInstanceIds": ["singleton-0"]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "extends:app.core.Logger->app.core.Base",
+      "kind": "extends",
+      "fromFqn": "app.core.Logger",
+      "toFqn": "app.core.Base",
+      "patternInstanceIds": []
+    }
+  ],
+  "patternInstances": [
+    {
+      "id": "singleton-0",
+      "patternId": "singleton",
+      "patternName": "Singleton",
+      "patternType": "Design Pattern",
+      "description": "Creational design pattern. Ensures a class has only one instance and provides a global point of access to it.",
+      "learningInfo": "...",
+      "classFqns": ["app.core.Logger"],
+      "memberFqns": ["app.core.Logger.instance", "app.core.Logger.getInstance()"]
+    }
+  ]
+}
+```
+
+</details>
+
+The response has one of the statuses below. When a request fails, its body has one `error` message.
+
+```
+Status  Meaning                                                   Example error
+200     The analysis ran, whether or not any patterns were found.
+400     patternIds is missing or contains an unknown pattern.     Unknown pattern ID: strategy
+500     The analysis could not run, such as when Java fails.      The message from the failure
+```

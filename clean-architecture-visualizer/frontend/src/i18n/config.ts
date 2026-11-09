@@ -4,6 +4,7 @@ import enChecker from './locales/en/checker.json';
 import enCommon from './locales/en/common.json';
 import enHome from './locales/en/home.json';
 import enLegend from './locales/en/legend.json';
+import enPatternAnalyzer from './locales/en/pattern-analyzer.json';
 import enProjectStarter from './locales/en/projectStarter.json';
 import enViolationsSideBarContent from './locales/en/violationsSideBarContent.json';
 
@@ -19,6 +20,7 @@ i18n.use(initReactI18next).init({
       common: enCommon,
       violationsSideBarContent: enViolationsSideBarContent,
       legend: enLegend,
+      patternAnalyzer: enPatternAnalyzer,
       projectStarter: enProjectStarter,
     },
   },

@@ -4,6 +4,7 @@ import {
   mockInteractionDetails,
   mockViolations,
 } from './data/analysis';
+import { mockPatternAnalyzerResponse } from './data/pattern-analyzer';
 
 export const handlers = [
   http.get('/api/analysis/summary', () =>
@@ -14,5 +15,8 @@ export const handlers = [
   ),
   http.get('/api/analysis/violations/:interactionId', () =>
     HttpResponse.json(mockViolations)
+  ),
+  http.post('/api/design-patterns/analyze', () =>
+    HttpResponse.json(mockPatternAnalyzerResponse)
   ),
 ];
