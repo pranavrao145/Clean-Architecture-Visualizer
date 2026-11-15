@@ -1,9 +1,114 @@
-import type { CodebaseASGEdge } from '../types/codebaseASGEdges.js';
-import type { CodebaseASGNode } from '../types/codebaseASGNodes.js';
-import type { PatternDefinition } from '../types/patternDefinition.js';
-import { CodebaseASG } from './CodebaseASG.js';
+import { isDeepStrictEqual } from "node:util";
+import type {
+  CandidateTopology,
+  PatternDefinition,
+} from "../types/patternDefinition.js";
+import { CodebaseASG } from "./CodebaseASG.js";
 
-type Bindings = Map<string, string>;
+type Bindings = Map<string, unknown>;
+
+// Check binding names before matching; actual values are stored separately.
+function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
+  if (Array.isArray(value)) {
+    return value.reduce<Set<string>>(
+      (current, item) => validateQueryValue(item, current),
+      names,
+    );
+  }
+
+  if (value === null || typeof value !== "object") {
+    return names;
+  }
+
+  const entries = Object.entries(value);
+
+  if (entries.length !== 1) {
+    throw new Error("A query operator must contain exactly one property");
+  }
+
+  const [operator, argument] = entries[0];
+
+  if (operator === "bind" || operator === "equalsBinding") {
+    if (typeof argument !== "string" || argument.length === 0) {
+      throw new Error(`Invalid ${operator} binding name`);
+    }
+
+    if (operator === "equalsBinding") {
+      if (!names.has(argument)) {
+        throw new Error(`Unbound query reference: ${argument}`);
+      }
+
+      return names;
+    }
+
+    if (names.has(argument)) {
+      throw new Error(`Duplicate query binding: ${argument}`);
+    }
+
+    return new Set([...names, argument]);
+  }
+
+  throw new Error(`Unknown query operator: ${operator}`);
+}
+
+function validateTopology(topology: CandidateTopology): void {
+  let names = new Set<string>();
+
+  for (const shape of [...topology.nodes, ...topology.edges]) {
+    for (const value of Object.values(shape)) {
+      names = validateQueryValue(value, names);
+    }
+  }
+
+  if (
+    topology.collectMatches !== undefined &&
+    !Array.isArray(topology.collectMatches)
+  ) {
+    throw new Error("Topology collectMatches must be an array");
+  }
+
+  for (const collection of topology.collectMatches ?? []) {
+    if (
+      !collection ||
+      !Array.isArray(collection.nodes) ||
+      !Array.isArray(collection.edges) ||
+      collection.nodes.length + collection.edges.length === 0
+    ) {
+      throw new Error(
+        "A collection must contain at least one node or edge query",
+      );
+    }
+
+    if (
+      collection.minMatches !== undefined &&
+      (!Number.isSafeInteger(collection.minMatches) ||
+        collection.minMatches < 0)
+    ) {
+      throw new Error("Collection minMatches must be a non-negative integer");
+    }
+
+    let localNames = names;
+
+    for (const shape of [...collection.nodes, ...collection.edges]) {
+      for (const value of Object.values(shape)) {
+        localNames = validateQueryValue(value, localNames);
+      }
+    }
+  }
+}
+
+type MatchHandler = (
+  nodeIndexes: Set<number>,
+  edgeIndexes: Set<number>,
+  bindings: Bindings,
+) => void;
+
+function matchKey(nodeIndexes: Set<number>, edgeIndexes: Set<number>): string {
+  return JSON.stringify([
+    [...nodeIndexes].sort((a, b) => a - b),
+    [...edgeIndexes].sort((a, b) => a - b),
+  ]);
+}
 
 export abstract class Pattern {
   readonly data: PatternDefinition;
@@ -13,48 +118,60 @@ export abstract class Pattern {
   }
 
   /**
-   * Finds every subgraph matching the pattern topology by backtracking through
+   * Finds every subgraph matching any topology by backtracking through
    * candidate nodes and then matching the corresponding edges.
    */
   candidateIdentification(fullCodebaseASG: CodebaseASG): CodebaseASG[] {
-    const topology = this.data.candidateTopology;
-    const matches: CodebaseASG[] = [];
+    for (const topology of this.data.candidateTopologies) {
+      validateTopology(topology);
+    }
 
-    this.findNodeMatches(
-      fullCodebaseASG,
-      topology,
-      matches,
-      0,
-      [],
-      new Set(),
-      new Map()
-    );
+    const matches: CodebaseASG[] = [];
+    const seen = new Set<string>();
+
+    for (const topology of this.data.candidateTopologies) {
+      this.findNodeMatches(
+        fullCodebaseASG,
+        topology,
+        0,
+        new Set(),
+        new Map(),
+        (nodeIndexes, edgeIndexes, bindings) =>
+          this.collectCandidate(
+            fullCodebaseASG,
+            topology,
+            nodeIndexes,
+            edgeIndexes,
+            bindings,
+            matches,
+            seen,
+          ),
+      );
+    }
     return matches;
   }
 
   /**
-   * Recursively selects distinct ASG nodes and carries successful placeholder
+   * Recursively selects distinct ASG nodes and carries successful
    * bindings into the edge-matching phase.
    */
   private findNodeMatches(
     fullCodebaseASG: CodebaseASG,
-    topology: PatternDefinition['candidateTopology'],
-    matches: CodebaseASG[],
+    topology: CandidateTopology,
     patternIndex: number,
-    selectedNodes: CodebaseASGNode[],
     usedNodeIndexes: Set<number>,
-    bindings: Bindings
+    bindings: Bindings,
+    onMatch: MatchHandler,
   ): void {
     if (patternIndex === topology.nodes.length) {
       this.findEdgeMatches(
         fullCodebaseASG,
         topology,
-        matches,
         0,
-        selectedNodes,
-        [],
+        usedNodeIndexes,
         new Set(),
-        bindings
+        bindings,
+        onMatch,
       );
       return;
     }
@@ -72,40 +189,35 @@ export abstract class Pattern {
       const nextBindings = this.matchValue(
         patternNode,
         fullCodebaseASG.getNodes()[candidateIndex],
-        bindings
+        bindings,
       );
-      if (!nextBindings) {
-        continue;
+      if (nextBindings) {
+        this.findNodeMatches(
+          fullCodebaseASG,
+          topology,
+          patternIndex + 1,
+          new Set([...usedNodeIndexes, candidateIndex]),
+          nextBindings,
+          onMatch,
+        );
       }
-
-      this.findNodeMatches(
-        fullCodebaseASG,
-        topology,
-        matches,
-        patternIndex + 1,
-        [...selectedNodes, fullCodebaseASG.getNodes()[candidateIndex]],
-        new Set([...usedNodeIndexes, candidateIndex]),
-        nextBindings
-      );
     }
   }
 
   /**
-   * Recursively selects distinct ASG edges and records complete topology
-   * matches as candidate subgraphs.
+   * Recursively selects distinct ASG edges and reports complete matches.
    */
   private findEdgeMatches(
     fullCodebaseASG: CodebaseASG,
-    topology: PatternDefinition['candidateTopology'],
-    matches: CodebaseASG[],
+    topology: CandidateTopology,
     patternIndex: number,
-    selectedNodes: CodebaseASGNode[],
-    selectedEdges: CodebaseASGEdge[],
+    usedNodeIndexes: Set<number>,
     usedEdgeIndexes: Set<number>,
-    bindings: Bindings
+    bindings: Bindings,
+    onMatch: MatchHandler,
   ): void {
     if (patternIndex === topology.edges.length) {
-      matches.push(new CodebaseASG(selectedNodes, selectedEdges));
+      onMatch(usedNodeIndexes, usedEdgeIndexes, bindings);
       return;
     }
 
@@ -122,21 +234,70 @@ export abstract class Pattern {
       const nextBindings = this.matchValue(
         patternEdge,
         fullCodebaseASG.getEdges()[candidateIndex],
-        bindings
+        bindings,
       );
-      if (!nextBindings) {
-        continue;
-      }
 
-      this.findEdgeMatches(
+      if (nextBindings) {
+        this.findEdgeMatches(
+          fullCodebaseASG,
+          topology,
+          patternIndex + 1,
+          usedNodeIndexes,
+          new Set([...usedEdgeIndexes, candidateIndex]),
+          nextBindings,
+          onMatch,
+        );
+      }
+    }
+  }
+
+  private collectCandidate(
+    fullCodebaseASG: CodebaseASG,
+    topology: CandidateTopology,
+    baseNodes: Set<number>,
+    baseEdges: Set<number>,
+    bindings: Bindings,
+    matches: CodebaseASG[],
+    seen: Set<string>,
+  ): void {
+    const nodes = new Set(baseNodes);
+    const edges = new Set(baseEdges);
+
+    for (const collection of topology.collectMatches ?? []) {
+      const collectionMatches = new Set<string>();
+
+      this.findNodeMatches(
         fullCodebaseASG,
-        topology,
-        matches,
-        patternIndex + 1,
-        selectedNodes,
-        [...selectedEdges, fullCodebaseASG.getEdges()[candidateIndex]],
-        new Set([...usedEdgeIndexes, candidateIndex]),
-        nextBindings
+        collection,
+        0,
+        new Set(),
+        bindings,
+        (nodeIndexes, edgeIndexes) => {
+          const key = matchKey(nodeIndexes, edgeIndexes);
+
+          if (!collectionMatches.has(key)) {
+            collectionMatches.add(key);
+
+            for (const index of nodeIndexes) nodes.add(index);
+            for (const index of edgeIndexes) edges.add(index);
+          }
+        },
+      );
+
+      if (collectionMatches.size < (collection.minMatches ?? 0)) {
+        return;
+      }
+    }
+
+    const key = matchKey(nodes, edges);
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      matches.push(
+        new CodebaseASG(
+          [...nodes].map((index) => fullCodebaseASG.getNodes()[index]),
+          [...edges].map((index) => fullCodebaseASG.getEdges()[index]),
+        ),
       );
     }
   }
@@ -148,58 +309,41 @@ export abstract class Pattern {
   private matchValue(
     patternValue: unknown,
     candidateValue: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
-    if (typeof patternValue === 'string') {
-      return this.matchStringValue(patternValue, candidateValue, bindings);
-    }
-
     if (Array.isArray(patternValue)) {
       return this.matchArrayValue(patternValue, candidateValue, bindings);
     }
 
-    if (patternValue !== null && typeof patternValue === 'object') {
+    if (patternValue !== null && typeof patternValue === "object") {
       return this.matchObjectValue(patternValue, candidateValue, bindings);
     }
 
     return patternValue === candidateValue ? bindings : undefined;
   }
 
-  /** Matches string wildcards, placeholders, and exact string values. */
-  private matchStringValue(
-    patternValue: string,
-    candidateValue: unknown,
-    bindings: Bindings
+  private bindValue(
+    name: string,
+    value: unknown,
+    bindings: Bindings,
   ): Bindings | undefined {
-    if (patternValue === '') {
-      return bindings;
-    }
-
-    if (!patternValue.startsWith('$')) {
-      return patternValue === candidateValue ? bindings : undefined;
-    }
-
-    const boundValue = bindings.get(patternValue);
-    if (boundValue !== undefined) {
-      return boundValue === candidateValue ? bindings : undefined;
-    }
-
-    if (typeof candidateValue !== 'string') {
+    if (value === undefined) {
       return undefined;
     }
 
-    return new Map(bindings).set(patternValue, candidateValue);
+    if (bindings.has(name)) {
+      throw new Error(`Duplicate query binding: ${name}`);
+    }
+
+    return new Map(bindings).set(name, value);
   }
 
-  /** Matches array wildcards or recursively matches equal-length arrays. */
+  /** Recursively matches equal-length arrays. */
   private matchArrayValue(
     patternValue: unknown[],
     candidateValue: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
-    if (patternValue.length === 0) {
-      return bindings;
-    }
     if (
       !Array.isArray(candidateValue) ||
       patternValue.length !== candidateValue.length
@@ -208,41 +352,61 @@ export abstract class Pattern {
     }
 
     let nextBindings = bindings;
+
     for (let index = 0; index < patternValue.length; index += 1) {
-      const matchedBindings = this.matchValue(
+      const matched = this.matchValue(
         patternValue[index],
         candidateValue[index],
-        nextBindings
+        nextBindings,
       );
-      if (!matchedBindings) {
-        return undefined;
-      }
-      nextBindings = matchedBindings;
+      if (!matched) return undefined;
+      nextBindings = matched;
     }
     return nextBindings;
   }
 
-  /** Recursively matches each declared object property and its value. */
+  /** Matches query operators or recursively matches declared properties. */
   private matchObjectValue(
     patternValue: object,
     candidateValue: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
-    if (candidateValue === null || typeof candidateValue !== 'object') {
+    const entries = Object.entries(patternValue);
+
+    if (entries.length === 1) {
+      const [operator, value] = entries[0];
+
+      if (operator === "bind" || operator === "equalsBinding") {
+        if (typeof value !== "string" || value.length === 0) {
+          throw new Error(`Invalid ${operator} binding name`);
+        }
+
+        if (operator === "equalsBinding") {
+          if (!bindings.has(value)) {
+            throw new Error(`Unbound query reference: ${value}`);
+          }
+
+          return isDeepStrictEqual(bindings.get(value), candidateValue)
+            ? bindings
+            : undefined;
+        }
+
+        return this.bindValue(value, candidateValue, bindings);
+      }
+    }
+    if (candidateValue === null || typeof candidateValue !== "object") {
       return undefined;
     }
 
     let nextBindings = bindings;
-    for (const [key, value] of Object.entries(patternValue)) {
-      const matchedBindings = this.matchValue(
+    for (const [key, value] of entries) {
+      const matched = this.matchValue(
         value,
         (candidateValue as Record<string, unknown>)[key],
-        nextBindings
+        nextBindings,
       );
-      if (!matchedBindings) {
-        return undefined;
-      }
-      nextBindings = matchedBindings;
+      if (!matched) return undefined;
+      nextBindings = matched;
     }
     return nextBindings;
   }
@@ -250,7 +414,7 @@ export abstract class Pattern {
   /** Checks that two modifier lists contain exactly the same modifiers. */
   protected hasExactlyModifiers(
     modifiers: string[],
-    expectedModifiers: string[]
+    expectedModifiers: string[],
   ): boolean {
     return (
       modifiers.length === expectedModifiers.length &&
