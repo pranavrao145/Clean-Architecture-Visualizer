@@ -15,10 +15,12 @@ const singletonDefinition: PatternDefinition = {
     description: 'description',
     learningInfo: 'learning info',
   },
-  candidateTopology: {
-    nodes: [],
-    edges: [],
-  },
+  candidateTopologies: [
+    {
+      nodes: [],
+      edges: [],
+    },
+  ],
 };
 
 describe('CommonPatternFactory', () => {
