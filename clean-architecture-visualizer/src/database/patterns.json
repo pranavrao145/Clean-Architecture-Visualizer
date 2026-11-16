@@ -168,5 +168,230 @@
         ]
       }
     ]
+  },
+  "abstractfactory": {
+    "metadata": {
+      "patternName": "AbstractFactory",
+      "patternType": "Design Pattern",
+      "description": "Creational design pattern that creates related product families through an abstract factory without exposing concrete product classes to the client.",
+      "learningInfo": "Use Abstract Factory when a client must work with interchangeable families of related products while remaining independent of concrete implementations."
+    },
+    "candidateTopologies": [
+      {
+        "nodes": [
+          { "type": "INTERFACE", "fqn": { "bind": "abstractFactory" } },
+          { "type": "INTERFACE", "fqn": { "bind": "productA" } },
+          { "type": "INTERFACE", "fqn": { "bind": "productB" } },
+          {
+            "type": "FIELD",
+            "fqn": { "bind": "factoryField" },
+            "typeFqn": { "equalsBinding": "abstractFactory" }
+          }
+        ],
+        "edges": [
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "abstractFactory" },
+            "methodFqn": { "bind": "abstractCreateA" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "abstractFactory" },
+            "methodFqn": { "bind": "abstractCreateB" }
+          },
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "abstractFactory" },
+            "implementingClassFqn": { "bind": "factoryOne" }
+          },
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "abstractFactory" },
+            "implementingClassFqn": { "bind": "factoryTwo" }
+          },
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "productA" },
+            "implementingClassFqn": { "bind": "productAOne" }
+          },
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "productB" },
+            "implementingClassFqn": { "bind": "productBOne" }
+          },
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "productA" },
+            "implementingClassFqn": { "bind": "productATwo" }
+          },
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "productB" },
+            "implementingClassFqn": { "bind": "productBTwo" }
+          },
+          {
+            "type": "HAS_FIELD",
+            "ownerFqn": { "bind": "client" },
+            "fieldFqn": { "equalsBinding": "factoryField" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "factoryOne" },
+            "methodFqn": { "bind": "factoryOneCreateA" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "factoryOne" },
+            "methodFqn": { "bind": "factoryOneCreateB" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "factoryTwo" },
+            "methodFqn": { "bind": "factoryTwoCreateA" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "factoryTwo" },
+            "methodFqn": { "bind": "factoryTwoCreateB" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "client" },
+            "methodFqn": { "bind": "clientUse" }
+          }
+        ],
+        "collectMatches": [
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "factoryOne" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "factoryTwo" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "productAOne" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "productBOne" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "productATwo" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "productBTwo" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "CLASS", "fqn": { "equalsBinding": "client" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "abstractCreateA" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "abstractCreateB" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "factoryOneCreateA" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "factoryOneCreateB" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "factoryTwoCreateA" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "factoryTwoCreateB" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "equalsBinding": "clientUse" } }],
+            "edges": [],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "CALLS", "callingMethodFqn": { "equalsBinding": "factoryOneCreateA" } }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "CALLS", "callingMethodFqn": { "equalsBinding": "factoryOneCreateB" } }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "CALLS", "callingMethodFqn": { "equalsBinding": "factoryTwoCreateA" } }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "CALLS", "callingMethodFqn": { "equalsBinding": "factoryTwoCreateB" } }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "CALLS", "callingMethodFqn": { "equalsBinding": "clientUse" } }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "MUTATES_FIELD", "methodFqn": { "equalsBinding": "factoryOneCreateA" } }
+            ]
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "MUTATES_FIELD", "methodFqn": { "equalsBinding": "factoryOneCreateB" } }
+            ]
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "MUTATES_FIELD", "methodFqn": { "equalsBinding": "factoryTwoCreateA" } }
+            ]
+          },
+          {
+            "nodes": [],
+            "edges": [
+              { "type": "MUTATES_FIELD", "methodFqn": { "equalsBinding": "factoryTwoCreateB" } }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
