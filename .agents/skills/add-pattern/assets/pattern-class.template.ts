@@ -32,9 +32,9 @@ export class <NAME>DesignPattern extends Pattern {
     const nodes = candidateASG.getNodes();
     const edges = candidateASG.getEdges();
 
-    // Keep verification specific to the candidate subgraph. Topology
-    // matching selected the nodes and edges; semantic rules such as names,
-    // modifiers, signatures, and typed relationships belong here.
+    // Replace this placeholder, and keep verification specific to the candidate
+    // subgraph. Topology matching selected the nodes and edges; semantic rules
+    // such as names, modifiers, signatures, and typed relationships belong here.
     return nodes.length === <NODE_COUNT> && edges.length === <EDGE_COUNT>;
   }
 }
