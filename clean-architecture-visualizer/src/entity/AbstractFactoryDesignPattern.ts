@@ -42,6 +42,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
   candidateVerification(candidate: CodebaseASG): boolean {
     const nodes = candidate.getNodes();
     const edges = candidate.getEdges();
+    // The candidate must contain exactly the abstract factory, two product
+    //  families, two concrete factories, four concrete products, and client.
     if (nodes.length !== 18) {
       return false;
     }
@@ -75,6 +77,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
       return false;
     }
 
+    // Require two distinct concrete factories implementing one abstract
+    //  factory interface.
     const productInterfaces = interfaces.filter(
       (interfaceNode) => interfaceNode.fqn !== abstractFactory.fqn,
     );
@@ -106,6 +110,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
       return false;
     }
 
+    // The abstract factory must expose exactly two methods, each returning an
+    //  abstract product interface rather than a concrete product class.
     const abstractFactoryMethods = methods.filter((method) =>
       edges.some(
         (edge) =>
@@ -127,6 +133,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
       return false;
     }
 
+    // Each concrete factory must implement both factory methods with matching
+    //  abstract return types and concrete, non-static implementations.
     if (
       !this.hasFactoryMethods(
         methods,
@@ -138,6 +146,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
       return false;
     }
 
+    // Both product families must have two concrete implementations, providing
+    //  a pair of aligned variants for each concrete factory.
     const productImplementations = edges.filter(
       (edge): edge is ImplementsEdge =>
         edge.type === 'IMPLEMENTS' &&
@@ -169,6 +179,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
       return false;
     }
 
+    // Factory methods must allocate products directly, without branching,
+    //  looping, static calls, or unresolved constructor targets.
     const calls = edges.filter((edge): edge is CallsEdge => edge.type === 'CALLS');
     const factoryMethods = factoryImplementations.flatMap((implementation) =>
       implementation.methodImplementations.map(
@@ -199,6 +211,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
       return false;
     }
 
+    // Factories must remain stateless and each allocation must return the
+    //  product family declared by its corresponding abstract factory method.
     if (
       edges.some((edge) => edge.type === 'MUTATES_FIELD') ||
       !factoryImplementations.every((implementation) =>
@@ -231,6 +245,8 @@ export class AbstractFactoryDesignPattern extends Pattern {
     const clientCalls = calls.filter(
       (call) => call.callingMethodFqn === clientMethod.fqn,
     );
+    // The client may call only the abstract factory through its abstractly
+    //  typed field; it must not construct or target concrete implementations.
     return (
       clientCalls.length === 2 &&
       clientCalls.every(
