@@ -4,11 +4,18 @@ import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.j
 import { PatternAnalyzerController } from '../../../src/interface_adapter/pattern-analyzer/pattern-analyzer-controller.js';
 import { PatternAnalyzerPresenter } from '../../../src/interface_adapter/pattern-analyzer/pattern-analyzer-presenter.js';
 import { PatternAnalyzerInteractor } from '../../../src/use_case/pattern-analyzer/pattern-analyzer-interactor.js';
+import { makeLongConditionalAsg } from '../fixtures/long-conditional-asg.js';
 import { makeSingletonASG } from '../fixtures/singleton-asg.js';
 
 type Body = {
   classes?: { name: string }[];
-  patternInstances?: { id: string; classFqns: string[] }[];
+  patternInstances?: {
+    id: string;
+    patternType: string;
+    classFqns: string[];
+    memberFqns: string[];
+    learningInfo: string;
+  }[];
   error?: string;
 };
 
@@ -44,6 +51,23 @@ describe('Pattern Analyzer use case', () => {
     expect(body.patternInstances?.map((p) => [p.id, p.classFqns])).toEqual([
       ['singleton-0', ['app.Logger']],
     ]);
+  });
+
+  it('flags a long conditional as an anti-pattern and suggests Strategy', async () => {
+    const { status, body } = await analyze(['long-conditional'], async () =>
+      makeLongConditionalAsg()
+    );
+
+    expect(status).toBe(200);
+    expect(body.patternInstances).toHaveLength(1);
+    const [instance] = body.patternInstances ?? [];
+    expect(instance).toMatchObject({
+      id: 'long-conditional-0',
+      patternType: 'Anti-Pattern',
+      classFqns: ['app.Payment'],
+      memberFqns: ['app.Payment.pay(java.lang.String, int)'],
+    });
+    expect(instance.learningInfo).toContain('Strategy Pattern');
   });
 
   it('returns the UML without highlights when no pattern is chosen', async () => {

@@ -1,5 +1,8 @@
 // The patterns a user can choose to analyse.
-export const AVAILABLE_PATTERNS = [{ id: 'singleton', name: 'Singleton' }];
+export const AVAILABLE_PATTERNS = [
+  { id: 'singleton', name: 'Singleton' },
+  { id: 'long-conditional', name: 'Long Conditional Statements' },
+];
 
 // ----- What the API sends (POST /design-patterns/analyze) -----
 
@@ -56,6 +59,28 @@ export const HIGHLIGHT_COLORS: Record<HighlightTone, string> = {
   unselected: '#e6f9dc',
   antiPattern: '#f2d7d7',
 };
+
+// A darker red, so a selected anti-pattern stands out like a selected pattern.
+export const SELECTED_ANTI_PATTERN_COLOR = '#e6a8a8';
+
+const ANTI_PATTERN_TYPE = 'Anti-Pattern';
+
+export const isAntiPattern = (instance: Pick<PatternInstance, 'patternType'>) =>
+  instance.patternType === ANTI_PATTERN_TYPE;
+
+// The colour that labels a detected instance: red for an anti-pattern, green
+// otherwise, with the darker shade when it's selected.
+export function instanceColor(
+  instance: Pick<PatternInstance, 'patternType'>,
+  isSelected: boolean
+): string {
+  if (isAntiPattern(instance)) {
+    return isSelected
+      ? SELECTED_ANTI_PATTERN_COLOR
+      : HIGHLIGHT_COLORS.antiPattern;
+  }
+  return isSelected ? HIGHLIGHT_COLORS.selected : HIGHLIGHT_COLORS.unselected;
+}
 
 export type MemberRow = UmlMember & { tone: HighlightTone };
 
@@ -264,7 +289,7 @@ export function buildPatternAnalyzerViewModel(
       instanceIds.includes(instance.id)
     );
     if (instances.length === 0) return 'none';
-    if (instances.some((instance) => instance.patternType === 'Anti-Pattern')) {
+    if (instances.some(isAntiPattern)) {
       return 'antiPattern';
     }
     return selectedInstance && instanceIds.includes(selectedInstance.id)

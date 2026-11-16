@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   arrowEndpoints,
   buildPatternAnalyzerViewModel,
+  HIGHLIGHT_COLORS,
+  instanceColor,
   type PatternAnalyzerResponse,
+  SELECTED_ANTI_PATTERN_COLOR,
 } from '@/lib/pattern-analyzer-view-model';
 import { mockPatternAnalyzerResponse } from '@/mocks/data/pattern-analyzer';
 
@@ -68,6 +71,18 @@ describe('buildPatternAnalyzerViewModel', () => {
 
     expect(classes[0].tone).toBe('antiPattern');
   });
+
+  it.each([
+    ['Design Pattern', true, HIGHLIGHT_COLORS.selected],
+    ['Design Pattern', false, HIGHLIGHT_COLORS.unselected],
+    ['Anti-Pattern', true, SELECTED_ANTI_PATTERN_COLOR],
+    ['Anti-Pattern', false, HIGHLIGHT_COLORS.antiPattern],
+  ])(
+    'labels a %s instance (selected: %s) with %s',
+    (patternType, isSelected, colour) => {
+      expect(instanceColor({ patternType }, isSelected)).toBe(colour);
+    }
+  );
 
   it('falls back to the defaults when a selection no longer exists', () => {
     const viewModel = buildPatternAnalyzerViewModel(

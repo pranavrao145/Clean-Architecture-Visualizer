@@ -5,6 +5,7 @@ import {
   type ClassBox,
   HIGHLIGHT_COLORS,
   type HighlightTone,
+  instanceColor,
   type PatternAnalyzerViewModel,
 } from '../../lib/pattern-analyzer-view-model';
 
@@ -84,7 +85,7 @@ const LearnTab = ({ viewModel }: { viewModel: PatternAnalyzerViewModel }) => {
           sx={{
             px: 1,
             borderRadius: 2,
-            bgcolor: HIGHLIGHT_COLORS.selected,
+            bgcolor: instanceColor(selectedInstance, true),
           }}
         >
           {selectedInstance.patternName}?

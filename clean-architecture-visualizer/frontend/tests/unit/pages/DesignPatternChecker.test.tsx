@@ -1,5 +1,6 @@
 import { HttpResponse, http } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
+import { SELECTED_ANTI_PATTERN_COLOR } from '@/lib/pattern-analyzer-view-model';
 import { mockPatternAnalyzerResponse } from '@/mocks/data/pattern-analyzer';
 import { server } from '@/mocks/server';
 import DesignPatternChecker from '@/pages/DesignPatternChecker';
@@ -36,7 +37,7 @@ describe('DesignPatternChecker', () => {
     render(<DesignPatternChecker />);
 
     expect(await screen.findByText('Logger')).toBeInTheDocument();
-    expect(requests).toEqual([['singleton']]);
+    expect(requests).toEqual([['singleton', 'long-conditional']]);
   });
 
   it('highlights pattern members and opens on the pattern class code', async () => {
@@ -51,6 +52,15 @@ describe('DesignPatternChecker', () => {
     expect(screen.getByText('public class Logger {')).toBeInTheDocument();
   });
 
+  it('offers Long Conditional Statements as a pattern to analyze', async () => {
+    render(<DesignPatternChecker />);
+    await screen.findByText('Logger');
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Long Conditional Statements' })
+    ).toBeChecked();
+  });
+
   it('only analyzes again when Re-analyze is clicked', async () => {
     const requests = recordRequests();
     render(<DesignPatternChecker />);
@@ -63,23 +73,26 @@ describe('DesignPatternChecker', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
 
-    await waitFor(() =>
-      expect(requests).toEqual([['singleton'], ['singleton']])
-    );
+    await waitFor(() => expect(requests).toHaveLength(2));
+    // Re-checking Singleton moves it to the end, so the order can differ.
+    expect(requests.map((ids) => [...ids].sort())).toEqual([
+      ['long-conditional', 'singleton'],
+      ['long-conditional', 'singleton'],
+    ]);
   });
 
   it('blocks Re-analyze and shows an error until a pattern is selected', async () => {
     render(<DesignPatternChecker />);
     await screen.findByText('Logger');
     const button = screen.getByRole('button', { name: 'reAnalyze' });
-    const checkbox = screen.getByRole('checkbox', { name: 'Singleton' });
+    const checkboxes = screen.getAllByRole('checkbox');
 
-    fireEvent.click(checkbox);
+    for (const checkbox of checkboxes) fireEvent.click(checkbox);
 
     expect(button).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('noPatternSelected');
 
-    fireEvent.click(checkbox);
+    fireEvent.click(checkboxes[0]);
 
     expect(button).toBeEnabled();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -103,6 +116,36 @@ describe('DesignPatternChecker', () => {
     expect(
       screen.getByText('Ensures a class has only one instance.')
     ).toBeInTheDocument();
+  });
+
+  it('labels a detected anti-pattern in red instead of green', async () => {
+    const [singleton] = mockPatternAnalyzerResponse.patternInstances;
+    server.use(
+      http.post(URL, () =>
+        HttpResponse.json({
+          ...mockPatternAnalyzerResponse,
+          patternInstances: [
+            {
+              ...singleton,
+              patternName: 'Long Conditional Statements',
+              patternType: 'Anti-Pattern',
+            },
+          ],
+        })
+      )
+    );
+    render(<DesignPatternChecker />);
+
+    const chip = await screen.findByRole('button', {
+      name: /^Long Conditional Statements:/,
+    });
+    expect(chip).toHaveStyle({ backgroundColor: SELECTED_ANTI_PATTERN_COLOR });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'tabs.learn' }));
+
+    expect(screen.getByText('Long Conditional Statements?')).toHaveStyle({
+      backgroundColor: SELECTED_ANTI_PATTERN_COLOR,
+    });
   });
 
   it('says so when no pattern is detected', async () => {
