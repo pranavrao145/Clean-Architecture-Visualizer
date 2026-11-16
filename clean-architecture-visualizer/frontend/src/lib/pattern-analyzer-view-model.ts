@@ -2,6 +2,7 @@
 export const AVAILABLE_PATTERNS = [
   { id: 'singleton', name: 'Singleton' },
   { id: 'adapter', name: 'Adapter' },
+  { id: 'abstractfactory', name: 'AbstractFactory' },
 ];
 
 // ----- What the API sends (POST /design-patterns/analyze) -----

@@ -86,6 +86,11 @@ name, signature, modifier, or relationship that cannot be inferred.
    must reject mismatched ID, name, and type. Its
    `candidateVerification` must check candidate cardinality, node kinds,
    semantic values, exact modifiers where required, and required typed edges.
+   Add concise comments before each major verification phase so the code
+   explains which pattern invariant is being checked (for example:
+   cardinality, role identification, inheritance/implementation structure,
+   method signatures, allocation behavior, and client isolation). Comments
+   should explain domain intent, not restate individual boolean expressions.
    Keep JSON and data-access concerns out of the entity.
 6. Add focused tests beside the repository's existing tests. In this
    repository, create
@@ -102,9 +107,26 @@ name, signature, modifier, or relationship that cannot be inferred.
    when that shared registry test exists. If the repository uses a different
    test layout, locate its analogous pattern and factory tests and follow
    their naming/style instead of inventing a parallel structure.
-7. Run the smallest relevant checks from `clean-architecture-visualizer`:
-   `npm test -- --runInBand <relevant-test-file>` when tests exist, then
-   `npm run type-check`. Report commands and outcomes explicitly.
+7. Make the required frontend catalog/test expectation updates described in
+   [Frontend pattern checklist](#frontend-pattern-checklist). These are
+   mechanical updates for every new pattern; do not skip them because the
+   detector itself is implemented in the backend.
+8. Run relevant checks from the `clean-architecture-visualizer`
+   package directory, not the repository root:
+   `cd clean-architecture-visualizer && npm test -- --runInBand
+   tests/backend/entity/<name>Pattern.test.ts` when tests exist, then
+   `cd clean-architecture-visualizer && npm run type-check`. Run these
+   sequentially so a failing or hanging topology test is diagnosed before
+   the type-check starts. Report the exact commands and outcomes explicitly.
+
+   Before running them, inspect the package scripts and dependency state. If
+   the selected command fails because a declared dependency is missing, restore
+   dependencies with the package manager and rerun the same check; do not
+   change dependency manifests for this recovery. If the test hangs or
+   backtracks excessively, stop it safely and inspect the topology for broad
+   unconstrained node queries. Prefer binding roles through typed edges and
+   collecting the bound nodes, while preserving the requested relationships,
+   before retrying.
 
 Do not pause for optional metadata. Fill it from the confirmed pattern shape,
 and do not create a second clarification round to refine an answer that was
@@ -142,6 +164,31 @@ blank or accepted.
 - Keep enum and metadata values type-safe; do not use casts to bypass
   `PatternDefinition`.
 
+## Frontend pattern checklist
+
+For every new pattern, make these two small synchronized edits:
+
+1. In
+   `clean-architecture-visualizer/frontend/src/lib/pattern-analyzer-view-model.ts`,
+   append `{ id: '<id>', name: '<Name>' }` to `AVAILABLE_PATTERNS`. Use the
+   exact lowercase backend `PatternId` for `id` and the exact PascalCase
+   display name for `name`. Preserve the existing array order unless the
+   request specifies another order.
+2. In
+   `clean-architecture-visualizer/frontend/tests/unit/pages/DesignPatternChecker.test.tsx`,
+   update the initial analyze-request expectation to include the new lowercase
+   ID in the same order as `AVAILABLE_PATTERNS` (the
+   `analyzes as soon as the page opens` test). If the test explicitly asserts
+   the complete selected-pattern list or a re-analysis request list, add the
+   new ID to those expected arrays as well; do not change unrelated assertions.
+
+These updates are required even when no new frontend component or behavior is
+needed. The shared mock response already supplies the response shape for the
+page; only add new mock classes, members, relationships, or Learn-tab
+assertions when the new pattern's UI behavior is specifically being tested.
+The frontend catalog entry and the request expectation must use the same ID,
+so verify both before running tests.
+
 ## Completion checklist
 
 - [ ] `clean-architecture-visualizer/src/database/patterns.json` contains the
@@ -153,7 +200,8 @@ blank or accepted.
 - [ ] `clean-architecture-visualizer/src/entity/PatternType.ts` is updated
       only when the requested type is new.
 - [ ] `clean-architecture-visualizer/src/entity/<Name>DesignPattern.ts`
-      contains constructor identity checks and complete candidate verification.
+      contains constructor identity checks, complete candidate verification,
+      and concise comments describing each major verification phase.
 - [ ] `clean-architecture-visualizer/src/entity/CommonPatternFactory.ts`
       registers the new `PatternId` with the concrete entity.
 - [ ] `clean-architecture-visualizer/tests/backend/entity/<name>Pattern.test.ts`
@@ -162,7 +210,29 @@ blank or accepted.
       no analogous test location, the summary explains why.
 - [ ] `clean-architecture-visualizer/tests/backend/entity/patternFactory.test.ts`
       covers factory construction when that shared registry test exists.
+- [ ] `clean-architecture-visualizer/frontend/src/lib/pattern-analyzer-view-model.ts`
+      adds `{ id: '<id>', name: '<Name>' }` to `AVAILABLE_PATTERNS`.
+- [ ] `clean-architecture-visualizer/frontend/tests/unit/pages/DesignPatternChecker.test.tsx`
+      includes the new ID in the initial analyze-request expectation and in
+      any other complete request arrays affected by the new catalog entry.
+- [ ] Copy the new backend `PatternId` value character-for-character into the
+      frontend catalog `id` and every affected request expectation. For
+      example, a backend ID of `observer` requires
+      `{ id: 'observer', name: 'Observer' }` and an expected request array
+      containing `'observer'`; do not change case, spelling, punctuation, or
+      use the display name in place of the ID.
+- [ ] For the initial page-load expectation, make the expected array exactly
+      `AVAILABLE_PATTERNS.map(({ id }) => id)` in both value and order. For
+      later re-analysis expectations, preserve the order produced by the
+      existing request-building behavior and add the new ID wherever that
+      behavior places it; do not assume every request uses catalog order.
 - [ ] Every requested topology element and verification rule is represented.
+- [ ] Verification comments explain the domain invariant checked by each
+      major phase without changing runtime behavior.
+- [ ] Validation commands were run from `clean-architecture-visualizer`;
+      topology tests completed before type-checking, and missing declared
+      dependencies were restored only when validation demonstrated they were
+      needed.
 - [ ] Type-check and targeted tests pass, or failures are reported without
       hiding them, including the exact commands and outcomes.
 - [ ] The final summary links every changed file, including all files listed
