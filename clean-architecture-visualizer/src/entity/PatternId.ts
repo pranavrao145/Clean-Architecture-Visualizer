@@ -1,5 +1,6 @@
 export enum PatternId {
   Singleton = 'singleton',
+  LongConditional = 'long-conditional',
 }
 
 export function isPatternId(value: unknown): value is PatternId {

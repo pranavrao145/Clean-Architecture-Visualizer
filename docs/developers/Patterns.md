@@ -110,6 +110,16 @@ For example, the singleton topology binds its class FQN through
 `returnTypeFqn` to reference that same FQN. Names and modifiers that are not
 part of the required topology are represented by wildcards.
 
+A topology has a fixed size, so it can't say "at least four calls". When a
+pattern depends on how many times something occurs, match one occurrence in the
+topology and override `candidateIdentification` to merge the matches. The Long
+Conditional Statements anti-pattern does this: its topology matches a class, one
+of its methods, and a single `CALLS` edge made inside a conditional.
+`LongConditionalAntiPattern` then merges every match for the same method into
+one candidate, and `candidateVerification` counts the distinct methods called
+from inside its conditionals. Without the merge, a method would be reported once
+per conditional call.
+
 ## Adding a New Pattern
 
 Adding a pattern requires a data definition, a concrete entity, and registration

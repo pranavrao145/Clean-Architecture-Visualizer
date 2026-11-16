@@ -44,5 +44,47 @@
                 }
             ]
         }
+    },
+    "long-conditional": {
+        "metadata": {
+            "patternName": "Long Conditional Statements",
+            "patternType": "Anti-Pattern",
+            "description": "Behavioural anti-pattern. A single method uses a long if/else-if chain or switch statement to choose between many different behaviours. Every new case means editing the same method again, so it keeps growing, becomes hard to read and test, and breaks the Open/Closed Principle.",
+            "learningInfo": "Consider replacing the conditional with the Strategy Pattern. Strategy is a behavioural design pattern that moves each branch into its own class behind a common interface (for example, a PaymentStrategy interface with CardPayment and PayPalPayment classes). The original class holds a reference to a strategy and delegates the work to it, instead of checking which case applies. Adding a new behaviour then means adding a new strategy class, without changing existing code, and each behaviour can be tested on its own."
+        },
+        "candidateTopology": {
+            "nodes": [
+                {
+                    "type": "CLASS",
+                    "fqn": "$ownerClass",
+                    "name": "",
+                    "packageName": "",
+                    "modifiers": []
+                },
+                {
+                    "type": "METHOD",
+                    "fqn": "$conditionalMethod",
+                    "name": "",
+                    "parameterFqns": [],
+                    "returnTypeFqn": "",
+                    "modifiers": []
+                }
+            ],
+            "edges": [
+                {
+                    "type": "HAS_METHOD",
+                    "ownerFqn": "$ownerClass",
+                    "methodFqn": "$conditionalMethod"
+                },
+                {
+                    "type": "CALLS",
+                    "callingMethodFqn": "$conditionalMethod",
+                    "calledMethodFqn": "",
+                    "targetObjectFqn": "",
+                    "insideConditional": true,
+                    "isConstructorCall": false
+                }
+            ]
+        }
     }
 }

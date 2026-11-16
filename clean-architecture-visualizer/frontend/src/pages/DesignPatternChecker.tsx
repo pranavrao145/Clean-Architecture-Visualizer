@@ -23,6 +23,7 @@ import {
   buildPatternAnalyzerViewModel,
   HIGHLIGHT_COLORS,
   type HighlightTone,
+  instanceColor,
 } from '../lib/pattern-analyzer-view-model';
 
 const LEGEND_TONES: HighlightTone[] = ['selected', 'unselected', 'antiPattern'];
@@ -134,9 +135,7 @@ const DesignPatternChecker = () => {
                   }
                   sx={{
                     color: 'text.primary',
-                    bgcolor: isSelected
-                      ? HIGHLIGHT_COLORS.selected
-                      : HIGHLIGHT_COLORS.unselected,
+                    bgcolor: instanceColor(instance, isSelected),
                   }}
                 />
               );
