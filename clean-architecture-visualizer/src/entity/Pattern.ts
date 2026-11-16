@@ -8,10 +8,14 @@ import { CodebaseASG } from "./CodebaseASG.js";
 type Bindings = Map<string, unknown>;
 
 // Check binding names before matching; actual values are stored separately.
-function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
+function validateQueryValue(
+  value: unknown,
+  names: Set<string>,
+  allowBind = true,
+): Set<string> {
   if (Array.isArray(value)) {
     return value.reduce<Set<string>>(
-      (current, item) => validateQueryValue(item, current),
+      (current, item) => validateQueryValue(item, current, allowBind),
       names,
     );
   }
@@ -28,6 +32,36 @@ function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
 
   const [operator, argument] = entries[0];
 
+  if (operator === "contains") {
+    if (
+      argument !== null &&
+      typeof argument === "object" &&
+      !Array.isArray(argument)
+    ) {
+      const properties = Object.entries(argument);
+      if (
+        properties.length === 1 &&
+        (properties[0][0] === "equalsBinding" || properties[0][0] === "bind")
+      ) {
+        validateQueryValue(argument, names, false);
+      } else {
+        for (const [, property] of properties) {
+          validateQueryValue(property, names, false);
+        }
+      }
+    } else {
+      validateQueryValue(argument, names, false);
+    }
+    return names;
+  }
+
+  if (operator === "excludes") {
+    if (!Array.isArray(argument)) {
+      throw new Error("The excludes operator requires an array");
+    }
+    return names;
+  }
+
   if (operator === "bind" || operator === "equalsBinding") {
     if (typeof argument !== "string" || argument.length === 0) {
       throw new Error(`Invalid ${operator} binding name`);
@@ -39,6 +73,10 @@ function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
       }
 
       return names;
+    }
+
+    if (!allowBind) {
+      throw new Error("Cannot introduce a binding inside contains");
     }
 
     if (names.has(argument)) {
@@ -375,6 +413,25 @@ export abstract class Pattern {
 
     if (entries.length === 1) {
       const [operator, value] = entries[0];
+
+      if (operator === "contains") {
+        return Array.isArray(candidateValue) &&
+          candidateValue.some(
+            (item) => this.matchValue(value, item, bindings) !== undefined,
+          )
+          ? bindings
+          : undefined;
+      }
+
+      if (operator === "excludes") {
+        return Array.isArray(candidateValue) &&
+          Array.isArray(value) &&
+          value.every((excluded) =>
+            candidateValue.every((item) => !isDeepStrictEqual(item, excluded)),
+          )
+          ? bindings
+          : undefined;
+      }
 
       if (operator === "bind" || operator === "equalsBinding") {
         if (typeof value !== "string" || value.length === 0) {

@@ -4,8 +4,14 @@ import type { PatternType } from "../entity/PatternType.js";
 import type { CodebaseASGEdge } from "./codebaseASGEdges.js";
 import type { CodebaseASGNode } from "./codebaseASGNodes.js";
 
+type ContainsValue<T> = T extends object
+  ? { [K in keyof T]?: T[K] | { equalsBinding: string } }
+  : T | { equalsBinding: string };
+
 export type QueryValue<T> =
-  | (T extends (infer Element)[] ? QueryValue<Element>[] : T)
+  | (T extends (infer Element)[]
+      ? QueryValue<Element>[] | { contains: ContainsValue<Element> } | { excludes: Element[] }
+      : T)
   | { bind: string }
   | { equalsBinding: string };
 
