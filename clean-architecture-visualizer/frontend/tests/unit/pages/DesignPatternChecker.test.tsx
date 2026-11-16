@@ -36,7 +36,7 @@ describe('DesignPatternChecker', () => {
     render(<DesignPatternChecker />);
 
     expect(await screen.findByText('Logger')).toBeInTheDocument();
-    expect(requests).toEqual([['singleton', 'adapter']]);
+    expect(requests).toEqual([['singleton', 'adapter', 'abstractfactory']]);
   });
 
   it('lets users exclude Adapter from analysis', async () => {
@@ -50,8 +50,8 @@ describe('DesignPatternChecker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
 
     await waitFor(() => expect(requests).toEqual([
-      ['singleton', 'adapter'],
-      ['singleton'],
+      ['singleton', 'adapter', 'abstractfactory'],
+      ['singleton', 'abstractfactory'],
     ]));
   });
 
@@ -80,7 +80,10 @@ describe('DesignPatternChecker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
 
     await waitFor(() =>
-      expect(requests).toEqual([['singleton', 'adapter'], ['adapter', 'singleton']])
+      expect(requests).toEqual([
+        ['singleton', 'adapter', 'abstractfactory'],
+        ['adapter', 'abstractfactory', 'singleton'],
+      ])
     );
   });
 
@@ -92,6 +95,7 @@ describe('DesignPatternChecker', () => {
 
     fireEvent.click(checkbox);
     fireEvent.click(screen.getByRole('checkbox', { name: 'Adapter' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'AbstractFactory' }));
 
     expect(button).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('noPatternSelected');
