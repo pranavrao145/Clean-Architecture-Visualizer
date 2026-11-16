@@ -164,7 +164,7 @@ export class CodebaseInfoUML {
       const memberFqn =
         edge.type === 'HAS_FIELD' && edge.ownerFqn === owner.fqn
           ? edge.fieldFqn
-          : edge.type === 'HAS_METHOD' && edge.ownerFqn === owner.fqn
+          : edge.type === 'HAS_METHOD' && edge.ownerFqn === owner.fqn && !edge.isInherited
             ? edge.methodFqn
             : undefined;
       const member = memberFqn ? this.nodesByFqn.get(memberFqn) : undefined;

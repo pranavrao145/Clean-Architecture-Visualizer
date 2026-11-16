@@ -24,12 +24,17 @@ export type HasMethodEdge = {
   type: "HAS_METHOD";
   ownerFqn: string;
   methodFqn: string;
+  isInherited?: boolean;
 };
 
 export type ImplementsEdge = {
   type: "IMPLEMENTS";
   interfaceFqn: string;
   implementingClassFqn: string;
+  methodImplementations: {
+    interfaceMethodFqn: string;
+    implementationMethodFqn: string;
+  }[];
 };
 
 export type MutatesFieldEdge = {
@@ -47,4 +52,5 @@ export type CallsEdge = {
   insideLoop: boolean;
   insideConditional: boolean;
   isConstructorCall: boolean;
+  isStaticCall: boolean;
 };
