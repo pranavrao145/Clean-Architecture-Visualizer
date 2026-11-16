@@ -5,6 +5,8 @@ import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
 import { PatternType } from '../../../src/entity/PatternType.js';
 import { SingletonDesignPattern } from '../../../src/entity/SingletonDesignPattern.js';
+import type { HasFieldEdge, HasMethodEdge } from '../../../src/types/codebaseASGEdges.js';
+import type { FieldNode, MethodNode } from '../../../src/types/codebaseASGNodes.js';
 import type { PatternDefinition } from '../../../src/types/patternDefinition.js';
 
 class TestPattern extends Pattern {
@@ -112,6 +114,7 @@ describe('Pattern candidate identification', () => {
           ],
         }],
       };
+
       const graph = new CodebaseASG(collectionGraph.getNodes(), [
         ...collectionGraph.getEdges(),
         {
@@ -850,7 +853,7 @@ describe('Singleton candidate verification', () => {
     returnTypeFqn: classNode.fqn,
     modifiers: ['PUBLIC' as const, 'STATIC' as const],
   };
-  const edges = [
+  const edges: [HasFieldEdge, HasMethodEdge] = [
     {
       type: 'HAS_FIELD' as const,
       ownerFqn: classNode.fqn,
@@ -871,7 +874,7 @@ describe('Singleton candidate verification', () => {
     ).toBe(true);
   });
 
-  it.each([
+  it.each<[string, { field?: Partial<FieldNode>; method?: Partial<MethodNode> }]>([
     ['a non-singleton field name', { field: { name: 'other' } }],
     ['a non-private field', { field: { modifiers: ['PUBLIC'] } }],
     ['a field of another type', { field: { typeFqn: 'example.Other' } }],

@@ -11,11 +11,11 @@ type Bindings = Map<string, unknown>;
 function validateQueryValue(
   value: unknown,
   names: Set<string>,
-  allowBind = true,
+  insideContains = false,
 ): Set<string> {
   if (Array.isArray(value)) {
     return value.reduce<Set<string>>(
-      (current, item) => validateQueryValue(item, current, allowBind),
+      (current, item) => validateQueryValue(item, current, insideContains),
       names,
     );
   }
@@ -39,19 +39,21 @@ function validateQueryValue(
       !Array.isArray(argument)
     ) {
       const properties = Object.entries(argument);
+
       if (
         properties.length === 1 &&
         (properties[0][0] === "equalsBinding" || properties[0][0] === "bind")
       ) {
-        validateQueryValue(argument, names, false);
+        validateQueryValue(argument, names, true);
       } else {
         for (const [, property] of properties) {
-          validateQueryValue(property, names, false);
+          validateQueryValue(property, names, true);
         }
       }
     } else {
-      validateQueryValue(argument, names, false);
+      validateQueryValue(argument, names, true);
     }
+
     return names;
   }
 
@@ -59,6 +61,7 @@ function validateQueryValue(
     if (!Array.isArray(argument)) {
       throw new Error("The excludes operator requires an array");
     }
+
     return names;
   }
 
@@ -75,7 +78,7 @@ function validateQueryValue(
       return names;
     }
 
-    if (!allowBind) {
+    if (insideContains) {
       throw new Error("Cannot introduce a binding inside contains");
     }
 
@@ -451,6 +454,7 @@ export abstract class Pattern {
         return this.bindValue(value, candidateValue, bindings);
       }
     }
+
     if (candidateValue === null || typeof candidateValue !== "object") {
       return undefined;
     }

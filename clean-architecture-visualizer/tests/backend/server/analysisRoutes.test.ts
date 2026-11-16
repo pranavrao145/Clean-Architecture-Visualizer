@@ -1,8 +1,11 @@
 import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { PatternsAccess } from '../../../src/data_access/PatternsAccess.js';
 import { SessionDBAccess } from '../../../src/data_access/sessionDBAccess.js';
+import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.js';
 import { useCaseGraph } from '../../../src/entity/useCaseGraph.js';
 import { startServer, stopServer } from '../../../src/server/server.js';
+import { makeSingletonASG } from '../fixtures/singleton-asg.js';
 
 describe('analysis routes', () => {
   let db: SessionDBAccess;
@@ -12,7 +15,12 @@ describe('analysis routes', () => {
     db = new SessionDBAccess();
     db.resetDB();
 
-    const server = await startServer(true, db);
+    const server = await startServer(
+      true,
+      db,
+      { buildCodebaseASG: async () => makeSingletonASG() },
+      new PatternsAccess(new CommonPatternFactory())
+    );
     const { port } = server.address() as AddressInfo;
     baseUrl = `http://localhost:${port}/api`;
   });

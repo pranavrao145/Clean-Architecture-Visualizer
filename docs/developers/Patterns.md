@@ -210,6 +210,10 @@ implementation remains visible to verification. Its target-method query uses
 `"modifiers": { "excludes": ["PRIVATE", "STATIC"] }`. It collects mapped
 adapter methods together with their delegation calls, and separately collects
 called-method nodes when available for highlighting.
+Adapter verification relies on this topology to supply the required roles and
+to collect only non-static, non-constructor calls through the selected field. It
+then checks that every target instance method has a concrete mapped
+implementation among the collected callers.
 
 The array of topologies still expresses alternatives. General negative
 subgraph queries, transitive paths, and inspecting data absent from the ASG

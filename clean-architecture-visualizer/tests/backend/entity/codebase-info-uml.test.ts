@@ -21,7 +21,7 @@ const pattern = new TestPattern({
     description: 'What it is',
     learningInfo: 'When to use it',
   },
-  candidateTopology: { nodes: [], edges: [] },
+  candidateTopologies: [{ nodes: [], edges: [] }],
 });
 
 // The nodes and edges of the singleton in the fixture.
