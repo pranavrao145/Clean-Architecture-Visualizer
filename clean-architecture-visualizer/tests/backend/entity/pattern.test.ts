@@ -5,6 +5,8 @@ import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
 import { PatternType } from '../../../src/entity/PatternType.js';
 import { SingletonDesignPattern } from '../../../src/entity/SingletonDesignPattern.js';
+import type { HasFieldEdge, HasMethodEdge } from '../../../src/types/codebaseASGEdges.js';
+import type { FieldNode, MethodNode } from '../../../src/types/codebaseASGNodes.js';
 import type { PatternDefinition } from '../../../src/types/patternDefinition.js';
 
 class TestPattern extends Pattern {
@@ -53,9 +55,9 @@ describe('Pattern candidate identification', () => {
 
   const collectionGraph = new CodebaseASG(
     [
-      { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [] },
-      { type: 'CLASS', fqn: 'B', name: 'B', packageName: '', modifiers: [] },
-      { type: 'CLASS', fqn: 'C', name: 'C', packageName: '', modifiers: [] },
+      { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [], supertypeFqns: [] },
+      { type: 'CLASS', fqn: 'B', name: 'B', packageName: '', modifiers: [], supertypeFqns: [] },
+      { type: 'CLASS', fqn: 'C', name: 'C', packageName: '', modifiers: [], supertypeFqns: [] },
       { type: 'METHOD', fqn: 'A.first', name: 'first', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
       { type: 'METHOD', fqn: 'A.second', name: 'second', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
       { type: 'METHOD', fqn: 'A.withArg', name: 'withArg', parameterFqns: ['int'], returnTypeFqn: 'void', modifiers: [] },
@@ -171,8 +173,8 @@ describe('Pattern candidate identification', () => {
 
     const graph = new CodebaseASG(
       [
-        { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [] },
-        { type: 'CLASS', fqn: 'B', name: 'B', packageName: '', modifiers: [] },
+        { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [], supertypeFqns: [] },
+        { type: 'CLASS', fqn: 'B', name: 'B', packageName: '', modifiers: [], supertypeFqns: [] },
         { type: 'METHOD', fqn: 'A.m', name: 'm', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
         { type: 'METHOD', fqn: 'B.m', name: 'm', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
       ],
@@ -260,6 +262,7 @@ describe('Pattern candidate identification', () => {
       name: 'First',
       packageName: 'example',
       modifiers: [],
+      supertypeFqns: [],
     };
 
     const target = {
@@ -268,6 +271,7 @@ describe('Pattern candidate identification', () => {
       name: 'Target',
       packageName: 'example',
       modifiers: [],
+      supertypeFqns: [],
     };
 
     const matches = pattern.candidateIdentification(
@@ -297,6 +301,7 @@ describe('Pattern candidate identification', () => {
           name: 'A',
           packageName: 'example',
           modifiers: [],
+          supertypeFqns: [],
         },
         {
           type: 'FIELD',
@@ -438,6 +443,7 @@ describe('Pattern candidate identification', () => {
       insideLoop,
       insideConditional: false,
       isConstructorCall: false,
+      isStaticCall: false,
     });
 
     const edges = [
@@ -479,6 +485,7 @@ describe('Pattern candidate identification', () => {
       name: 'Service',
       packageName: 'example',
       modifiers: ['PUBLIC' as const],
+      supertypeFqns: [],
     };
     const fieldNode = {
       type: 'FIELD' as const,
@@ -531,6 +538,7 @@ describe('Pattern candidate identification', () => {
       name: 'Service',
       packageName: 'example',
       modifiers: [],
+      supertypeFqns: [],
     };
     const methodNode = {
       type: 'METHOD' as const,
@@ -553,6 +561,7 @@ describe('Pattern candidate identification', () => {
       insideLoop: false,
       insideConditional: false,
       isConstructorCall: false,
+      isStaticCall: false,
     };
 
     expect(
@@ -588,6 +597,7 @@ describe('Pattern candidate identification', () => {
       name: 'First',
       packageName: 'example',
       modifiers: [],
+      supertypeFqns: [],
     };
     const secondClass = {
       type: 'CLASS' as const,
@@ -595,6 +605,7 @@ describe('Pattern candidate identification', () => {
       name: 'Second',
       packageName: 'example',
       modifiers: [],
+      supertypeFqns: [],
     };
 
     const matches = pattern.candidateIdentification(
@@ -703,6 +714,7 @@ describe('Pattern candidate identification', () => {
       insideLoop: false,
       insideConditional: false,
       isConstructorCall: false,
+      isStaticCall: false,
     };
     const invalidCall = { ...validCall, insideConditional: true };
 
@@ -723,6 +735,7 @@ describe('Singleton candidate verification', () => {
     name: 'Singleton',
     packageName: 'example',
     modifiers: [],
+    supertypeFqns: [],
   };
   const fieldNode = {
     type: 'FIELD' as const,
@@ -739,7 +752,7 @@ describe('Singleton candidate verification', () => {
     returnTypeFqn: classNode.fqn,
     modifiers: ['PUBLIC' as const, 'STATIC' as const],
   };
-  const edges = [
+  const edges: [HasFieldEdge, HasMethodEdge] = [
     {
       type: 'HAS_FIELD' as const,
       ownerFqn: classNode.fqn,
@@ -760,7 +773,7 @@ describe('Singleton candidate verification', () => {
     ).toBe(true);
   });
 
-  it.each([
+  it.each<[string, { field?: Partial<FieldNode>; method?: Partial<MethodNode> }]>([
     ['a non-singleton field name', { field: { name: 'other' } }],
     ['a non-private field', { field: { modifiers: ['PUBLIC'] } }],
     ['a field of another type', { field: { typeFqn: 'example.Other' } }],

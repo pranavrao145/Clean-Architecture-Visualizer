@@ -5,14 +5,16 @@
       "fqn": "app.Dog",
       "name": "Dog",
       "packageName": "app",
-      "modifiers": ["PUBLIC"]
+      "modifiers": ["PUBLIC"],
+      "supertypeFqns": ["app.Animal", "app.Pet"]
     },
     {
       "type": "CLASS",
       "fqn": "app.Animal",
       "name": "Animal",
       "packageName": "app",
-      "modifiers": ["PUBLIC", "ABSTRACT"]
+      "modifiers": ["PUBLIC", "ABSTRACT"],
+      "supertypeFqns": []
     },
     {
       "type": "INTERFACE",
@@ -61,7 +63,8 @@
     {
       "type": "IMPLEMENTS",
       "interfaceFqn": "app.Pet",
-      "implementingClassFqn": "app.Dog"
+      "implementingClassFqn": "app.Dog",
+      "methodImplementations": []
     },
     {
       "type": "HAS_FIELD",
@@ -86,7 +89,8 @@
       "targetObjectFqn": "app.Dog",
       "insideLoop": false,
       "insideConditional": false,
-      "isConstructorCall": false
+      "isConstructorCall": false,
+      "isStaticCall": false
     }
   ]
 }

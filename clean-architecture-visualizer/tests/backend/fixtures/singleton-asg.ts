@@ -2,7 +2,7 @@ import { CodebaseASG } from '../../../src/entity/CodebaseASG.js';
 import type { CodebaseASGEdge } from '../../../src/types/codebaseASGEdges.js';
 import type { CodebaseASGNode } from '../../../src/types/codebaseASGNodes.js';
 
-// A singleton `Logger` used by a `Report`, in the JavaParser CLI's real output.
+// A singleton `Logger` used by a `Report`.
 const nodes = [
   {
     type: 'CLASS',
@@ -10,6 +10,7 @@ const nodes = [
     name: 'Logger',
     packageName: 'app',
     modifiers: ['PUBLIC'],
+    supertypeFqns: [],
   },
   {
     type: 'FIELD',
@@ -40,6 +41,7 @@ const nodes = [
     name: 'Report',
     packageName: 'app',
     modifiers: ['PUBLIC'],
+    supertypeFqns: ['app.Printable'],
   },
   {
     type: 'FIELD',
@@ -107,6 +109,7 @@ const edges: CodebaseASGEdge[] = [
     type: 'IMPLEMENTS',
     interfaceFqn: 'Printable',
     implementingClassFqn: 'app.Report',
+    methodImplementations: [],
   },
 ];
 

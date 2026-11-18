@@ -44,6 +44,7 @@ export type ClassNode = {
   name: string;
   packageName: string;
   modifiers: ClassModifier[];
+  supertypeFqns: string[];
 };
 
 export type EnumNode = {
