@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CodebaseASG } from "../entity/CodebaseASG.js";
+import type { CodebaseASG } from "../entity/CodebaseASG.js";
 import type { CodebaseASGNode } from "../types/codebaseASGNodes.js";
 import type { CodebaseASGEdge } from "../types/codebaseASGEdges.js";
 import type { JavaParserCliAccessInterface } from "./JavaParserCliAccessInterface.js";
