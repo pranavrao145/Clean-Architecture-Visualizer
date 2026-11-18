@@ -4,25 +4,18 @@
     "nodes": [
       {
         "type": "CLASS",
-        "fqn": "$ownerClass",
-        "name": "",
-        "packageName": "",
-        "modifiers": []
+        "fqn": { "bind": "ownerClass" }
       },
       {
         "type": "METHOD",
-        "fqn": "$ownedMethod",
-        "name": "",
-        "parameterFqns": [],
-        "returnTypeFqn": "",
-        "modifiers": []
+        "fqn": { "bind": "ownedMethod" }
       }
     ],
     "edges": [
       {
         "type": "HAS_METHOD",
-        "ownerFqn": "$ownerClass",
-        "methodFqn": "$ownedMethod"
+        "ownerFqn": { "equalsBinding": "ownerClass" },
+        "methodFqn": { "equalsBinding": "ownedMethod" }
       }
     ]
   },
@@ -31,24 +24,18 @@
     "nodes": [
       {
         "type": "CLASS",
-        "fqn": "$ownerClass",
-        "name": "",
-        "packageName": "",
-        "modifiers": []
+        "fqn": { "bind": "ownerClass" }
       },
       {
         "type": "FIELD",
-        "fqn": "$ownedField",
-        "name": "",
-        "typeFqn": "",
-        "modifiers": []
+        "fqn": { "bind": "ownedField" }
       }
     ],
     "edges": [
       {
         "type": "HAS_FIELD",
-        "ownerFqn": "$ownerClass",
-        "fieldFqn": "$ownedField"
+        "ownerFqn": { "equalsBinding": "ownerClass" },
+        "fieldFqn": { "equalsBinding": "ownedField" }
       }
     ]
   },
@@ -57,24 +44,18 @@
     "nodes": [
       {
         "type": "INTERFACE",
-        "fqn": "$interface",
-        "name": "",
-        "packageName": "",
-        "modifiers": []
+        "fqn": { "bind": "interface" }
       },
       {
         "type": "CLASS",
-        "fqn": "$implementation",
-        "name": "",
-        "packageName": "",
-        "modifiers": []
+        "fqn": { "bind": "implementation" }
       }
     ],
     "edges": [
       {
         "type": "IMPLEMENTS",
-        "interfaceFqn": "$interface",
-        "implementingClassFqn": "$implementation"
+        "interfaceFqn": { "equalsBinding": "interface" },
+        "implementingClassFqn": { "equalsBinding": "implementation" }
       }
     ]
   },
@@ -83,24 +64,18 @@
     "nodes": [
       {
         "type": "CLASS",
-        "fqn": "$parentClass",
-        "name": "",
-        "packageName": "",
-        "modifiers": []
+        "fqn": { "bind": "parentClass" }
       },
       {
         "type": "CLASS",
-        "fqn": "$childClass",
-        "name": "",
-        "packageName": "",
-        "modifiers": []
+        "fqn": { "bind": "childClass" }
       }
     ],
     "edges": [
       {
         "type": "EXTENDS",
-        "parentClassFqn": "$parentClass",
-        "childClassFqn": "$childClass"
+        "parentClassFqn": { "equalsBinding": "parentClass" },
+        "childClassFqn": { "equalsBinding": "childClass" }
       }
     ]
   },
@@ -109,27 +84,18 @@
     "nodes": [
       {
         "type": "METHOD",
-        "fqn": "$callingMethod",
-        "name": "",
-        "parameterFqns": [],
-        "returnTypeFqn": "",
-        "modifiers": []
+        "fqn": { "bind": "callingMethod" }
       },
       {
         "type": "METHOD",
-        "fqn": "$calledMethod",
-        "name": "",
-        "parameterFqns": [],
-        "returnTypeFqn": "",
-        "modifiers": []
+        "fqn": { "bind": "calledMethod" }
       }
     ],
     "edges": [
       {
         "type": "CALLS",
-        "callingMethodFqn": "$callingMethod",
-        "calledMethodFqn": "$calledMethod",
-        "targetObjectFqn": "",
+        "callingMethodFqn": { "equalsBinding": "callingMethod" },
+        "calledMethodFqn": { "equalsBinding": "calledMethod" },
         "insideLoop": false,
         "insideConditional": false,
         "isConstructorCall": false

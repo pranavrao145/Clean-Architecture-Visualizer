@@ -14,8 +14,8 @@ class TestPattern extends Pattern {
 }
 
 const definition = (
-  nodes: PatternDefinition['candidateTopology']['nodes'],
-  edges: PatternDefinition['candidateTopology']['edges']
+  nodes: PatternDefinition['candidateTopologies'][number]['nodes'],
+  edges: PatternDefinition['candidateTopologies'][number]['edges']
 ): PatternDefinition => ({
   id: PatternId.Singleton,
   metadata: {
@@ -24,30 +24,453 @@ const definition = (
     description: '',
     learningInfo: '',
   },
-  candidateTopology: { nodes, edges },
+  candidateTopologies: [{ nodes, edges }],
 });
 
 describe('Pattern candidate identification', () => {
-  it('finds generic topology matches and preserves placeholder bindings', () => {
+  const collectionTopology: PatternDefinition['candidateTopologies'][number] = {
+    nodes: [{ type: 'CLASS', fqn: { bind: 'owner' } }],
+    edges: [],
+    collectMatches: [
+      {
+        nodes: [
+          {
+            type: 'METHOD',
+            fqn: { bind: 'method' },
+            parameterFqns: [],
+          },
+        ],
+        edges: [
+          {
+            type: 'HAS_METHOD',
+            ownerFqn: { equalsBinding: 'owner' },
+            methodFqn: { equalsBinding: 'method' },
+          },
+        ],
+      },
+    ],
+  };
+
+  const collectionGraph = new CodebaseASG(
+    [
+      { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [] },
+      { type: 'CLASS', fqn: 'B', name: 'B', packageName: '', modifiers: [] },
+      { type: 'CLASS', fqn: 'C', name: 'C', packageName: '', modifiers: [] },
+      { type: 'METHOD', fqn: 'A.first', name: 'first', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+      { type: 'METHOD', fqn: 'A.second', name: 'second', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+      { type: 'METHOD', fqn: 'A.withArg', name: 'withArg', parameterFqns: ['int'], returnTypeFqn: 'void', modifiers: [] },
+      { type: 'METHOD', fqn: 'B.only', name: 'only', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+      { type: 'METHOD', fqn: 'unowned', name: 'unowned', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+    ],
+    [
+      { type: 'HAS_METHOD', ownerFqn: 'A', methodFqn: 'A.first' },
+      { type: 'HAS_METHOD', ownerFqn: 'A', methodFqn: 'A.second' },
+      { type: 'HAS_METHOD', ownerFqn: 'A', methodFqn: 'A.withArg' },
+      { type: 'HAS_METHOD', ownerFqn: 'B', methodFqn: 'B.only' },
+    ]
+  );
+
+  it('collects all matching owned methods and edges per base candidate', () => {
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [collectionTopology],
+    });
+
+    const matches = pattern.candidateIdentification(collectionGraph);
+
+    expect(matches.map((candidate) => candidate.getNodes().map((node) => node.fqn))).toEqual([
+      ['A', 'A.first', 'A.second'],
+      ['B', 'B.only'],
+      ['C'],
+    ]);
+
+    expect(matches.map((candidate) => candidate.getEdges())).toEqual([
+      [collectionGraph.getEdges()[0], collectionGraph.getEdges()[1]],
+      [collectionGraph.getEdges()[3]],
+      [],
+    ]);
+  });
+
+  it('requires the requested number of distinct collection matches', () => {
+    const collection = collectionTopology.collectMatches![0];
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [
+        {
+          ...collectionTopology,
+          collectMatches: [
+            {
+              ...collection,
+              minMatches: 2,
+            },
+          ],
+        },
+      ],
+    });
+
+    const matches = pattern.candidateIdentification(collectionGraph);
+
+    expect(matches).toHaveLength(1);
+    expect(matches[0].getNodes().map((node) => node.fqn)).toEqual([
+      'A',
+      'A.first',
+      'A.second',
+    ]);
+  });
+
+  it('keeps collection bindings independent while merging their results', () => {
+    const collection = collectionTopology.collectMatches![0];
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [
+        {
+          ...collectionTopology,
+          collectMatches: [
+            collection,
+            {
+              ...collection,
+              nodes: [
+                {
+                  type: 'METHOD',
+                  fqn: { bind: 'method' },
+                  parameterFqns: ['int'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const [candidate] = pattern.candidateIdentification(collectionGraph);
+
+    expect(candidate.getNodes().map((node) => node.fqn)).toEqual([
+      'A',
+      'A.first',
+      'A.second',
+      'A.withArg',
+    ]);
+
+    expect(candidate.getEdges()).toHaveLength(3);
+  });
+
+  it('collects separately for different bindings of the same base subgraph', () => {
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [
+        {
+          nodes: [
+            { type: 'CLASS', fqn: { bind: 'owner' } },
+            { type: 'CLASS' },
+          ],
+          edges: [],
+          collectMatches: collectionTopology.collectMatches,
+        },
+      ],
+    });
+
+    const graph = new CodebaseASG(
+      [
+        { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [] },
+        { type: 'CLASS', fqn: 'B', name: 'B', packageName: '', modifiers: [] },
+        { type: 'METHOD', fqn: 'A.m', name: 'm', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+        { type: 'METHOD', fqn: 'B.m', name: 'm', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+      ],
+      [
+        { type: 'HAS_METHOD', ownerFqn: 'A', methodFqn: 'A.m' },
+        { type: 'HAS_METHOD', ownerFqn: 'B', methodFqn: 'B.m' },
+      ]
+    );
+
+    const matches = pattern.candidateIdentification(graph);
+
+    expect(matches).toHaveLength(2);
+    expect(matches.map((candidate) => candidate.getNodes().map((node) => node.fqn))).toEqual([
+      ['A', 'B', 'A.m'],
+      ['B', 'A', 'B.m'],
+    ]);
+  });
+
+  it('can collect a base node without duplicating it in the candidate', () => {
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [
+        {
+          nodes: [{ type: 'CLASS', fqn: { bind: 'owner' } }],
+          edges: [],
+          collectMatches: [
+            {
+              nodes: [{ type: 'CLASS', fqn: { equalsBinding: 'owner' } }],
+              edges: [],
+              minMatches: 1,
+            },
+          ],
+        },
+      ],
+    });
+
+    const candidates = pattern.candidateIdentification(collectionGraph);
+
+    expect(candidates.map((candidate) => candidate.getNodes().length)).toEqual([
+      1, 1, 1,
+    ]);
+  });
+
+  it('rejects invalid collection minima and leaked local bindings before matching', () => {
+    const collection = collectionTopology.collectMatches![0];
+    const makePattern = (
+      collectMatches: NonNullable<typeof collectionTopology.collectMatches>
+    ) =>
+      new TestPattern({
+        ...definition([], []),
+        candidateTopologies: [{ ...collectionTopology, collectMatches }],
+      });
+
+    expect(() =>
+      makePattern([{ ...collection, minMatches: -1 }]).candidateIdentification(
+        new CodebaseASG([], [])
+      )
+    ).toThrow('Collection minMatches must be a non-negative integer');
+    expect(() =>
+      makePattern([{ nodes: [], edges: [] }]).candidateIdentification(
+        new CodebaseASG([], [])
+      )
+    ).toThrow('A collection must contain at least one node or edge query');
+    expect(() =>
+      makePattern([
+        collection,
+        { nodes: [{ type: 'METHOD', fqn: { equalsBinding: 'method' } }], edges: [] },
+      ]).candidateIdentification(new CodebaseASG([], []))
+    ).toThrow('Unbound query reference: method');
+  });
+
+  it('combines alternative topologies and deduplicates identical subgraphs', () => {
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [
+        { nodes: [{ type: 'CLASS' }], edges: [] },
+        { nodes: [{ type: 'CLASS', name: 'First' }], edges: [] },
+        { nodes: [{ type: 'INTERFACE' }], edges: [] },
+      ],
+    });
+
+    const first = {
+      type: 'CLASS' as const,
+      fqn: 'example.First',
+      name: 'First',
+      packageName: 'example',
+      modifiers: [],
+    };
+
+    const target = {
+      type: 'INTERFACE' as const,
+      fqn: 'example.Target',
+      name: 'Target',
+      packageName: 'example',
+      modifiers: [],
+    };
+
+    const matches = pattern.candidateIdentification(
+      new CodebaseASG([first, target], [])
+    );
+
+    expect(matches.map((match) => match.getNodes())).toEqual([
+      [first],
+      [target],
+    ]);
+  });
+
+  it('deduplicates matches with the same nodes in different topology orders', () => {
+    const pattern = new TestPattern({
+      ...definition([], []),
+      candidateTopologies: [
+        { nodes: [{ type: 'CLASS' }, { type: 'FIELD' }], edges: [] },
+        { nodes: [{ type: 'FIELD' }, { type: 'CLASS' }], edges: [] },
+      ],
+    });
+
+    const graph = new CodebaseASG(
+      [
+        {
+          type: 'CLASS',
+          fqn: 'example.A',
+          name: 'A',
+          packageName: 'example',
+          modifiers: [],
+        },
+        {
+          type: 'FIELD',
+          fqn: 'example.A.field',
+          name: 'field',
+          typeFqn: 'int',
+          modifiers: [],
+        },
+      ],
+      []
+    );
+
+    expect(pattern.candidateIdentification(graph)).toHaveLength(1);
+  });
+
+  it('treats omitted values as unconstrained and empty values as exact', () => {
+    const methods = [
+      {
+        type: 'METHOD' as const,
+        fqn: 'example.empty',
+        name: '',
+        parameterFqns: [],
+        returnTypeFqn: 'void',
+        modifiers: [],
+      },
+      {
+        type: 'METHOD' as const,
+        fqn: 'example.run',
+        name: 'run',
+        parameterFqns: ['int'],
+        returnTypeFqn: 'void',
+        modifiers: [],
+      },
+    ];
+
+    const graph = new CodebaseASG(methods, []);
+
+    expect(
+      new TestPattern(definition([{ type: 'METHOD' }], [])).candidateIdentification(
+        graph
+      )
+    ).toHaveLength(2);
+    expect(
+      new TestPattern(
+        definition([{ type: 'METHOD', name: '', parameterFqns: [] }], [])
+      ).candidateIdentification(graph)[0].getNodes()
+    ).toEqual([methods[0]]);
+  });
+
+  it('binds and compares complete parameter arrays including empty arrays', () => {
+    const pattern = new TestPattern(
+      definition(
+        [
+          {
+            type: 'METHOD',
+            name: 'target',
+            parameterFqns: { bind: 'parameters' },
+          },
+          {
+            type: 'METHOD',
+            name: 'adapter',
+            parameterFqns: { equalsBinding: 'parameters' },
+          },
+        ],
+        []
+      )
+    );
+
+    const method = (fqn: string, name: string, parameterFqns: string[]) => ({
+      type: 'METHOD' as const,
+      fqn,
+      name,
+      parameterFqns,
+      returnTypeFqn: 'void',
+      modifiers: [],
+    });
+
+    const graph = new CodebaseASG(
+      [
+        method('target1', 'target', ['String', 'int']),
+        method('adapter1', 'adapter', ['String', 'int']),
+        method('adapter2', 'adapter', ['int', 'String']),
+        method('target3', 'target', []),
+        method('adapter3', 'adapter', []),
+      ],
+      []
+    );
+    expect(
+      pattern.candidateIdentification(graph).map((match) =>
+        match.getNodes().map((node) => node.fqn)
+      )
+    ).toEqual([['target1', 'adapter1'], ['target3', 'adapter3']]);
+  });
+
+  it('reports an unbound value reference', () => {
+    const pattern = new TestPattern(
+      definition(
+        [{ type: 'METHOD', parameterFqns: { equalsBinding: 'missing' } }],
+        []
+      )
+    );
+
+    expect(() =>
+      pattern.candidateIdentification(new CodebaseASG([], []))
+    ).toThrow('Unbound query reference: missing');
+  });
+
+  it('rejects duplicate bindings even when there are no candidate nodes', () => {
+    const pattern = new TestPattern(
+      definition(
+        [
+          { type: 'CLASS', fqn: { bind: 'same' } },
+          { type: 'FIELD', fqn: { bind: 'same' } },
+        ],
+        []
+      )
+    );
+    expect(() =>
+      pattern.candidateIdentification(new CodebaseASG([], []))
+    ).toThrow('Duplicate query binding: same');
+  });
+
+  it('binds and compares boolean edge properties', () => {
+    const pattern = new TestPattern(
+      definition(
+        [],
+        [
+          { type: 'CALLS', insideLoop: { bind: 'inLoop' } },
+          { type: 'CALLS', insideLoop: { equalsBinding: 'inLoop' } },
+        ]
+      )
+    );
+
+    const call = (callingMethodFqn: string, insideLoop: boolean) => ({
+      type: 'CALLS' as const,
+      callingMethodFqn,
+      calledMethodFqn: 'target',
+      targetObjectFqn: '',
+      insideLoop,
+      insideConditional: false,
+      isConstructorCall: false,
+    });
+
+    const edges = [
+      call('first', true),
+      call('second', true),
+      call('third', false),
+    ];
+    const matches = pattern.candidateIdentification(new CodebaseASG([], edges));
+    expect(matches).toHaveLength(1);
+    expect(matches[0].getEdges()).toEqual([edges[0], edges[1]]);
+  });
+
+  it('finds generic topology matches and preserves bindings', () => {
     const pattern = new TestPattern(
       definition(
         [
           {
             type: 'CLASS',
-            fqn: '$class',
-            name: '',
-            packageName: '',
-            modifiers: [],
+            fqn: { bind: 'class' },
           },
           {
             type: 'FIELD',
-            fqn: '$field',
-            name: '',
-            typeFqn: '$class',
-            modifiers: [],
+            fqn: { bind: 'field' },
+            typeFqn: { equalsBinding: 'class' },
           },
         ],
-        [{ type: 'HAS_FIELD', ownerFqn: '$class', fieldFqn: '$field' }]
+        [
+          {
+            type: 'HAS_FIELD',
+            ownerFqn: { equalsBinding: 'class' },
+            fieldFqn: { equalsBinding: 'field' },
+          },
+        ]
       )
     );
     const classNode = {
@@ -86,21 +509,20 @@ describe('Pattern candidate identification', () => {
         [
           {
             type: 'CLASS',
-            fqn: '$class',
-            name: '',
-            packageName: '',
-            modifiers: [],
+            fqn: { bind: 'class' },
           },
           {
             type: 'METHOD',
-            fqn: '$method',
-            name: '',
-            parameterFqns: [],
-            returnTypeFqn: '',
-            modifiers: [],
+            fqn: { bind: 'method' },
           },
         ],
-        [{ type: 'HAS_METHOD', ownerFqn: '$class', methodFqn: '$method' }]
+        [
+          {
+            type: 'HAS_METHOD',
+            ownerFqn: { equalsBinding: 'class' },
+            methodFqn: { equalsBinding: 'method' },
+          },
+        ]
       )
     );
     const classNode = {
@@ -154,10 +576,7 @@ describe('Pattern candidate identification', () => {
         [
           {
             type: 'CLASS',
-            fqn: '$class',
-            name: '',
-            packageName: '',
-            modifiers: [],
+            fqn: { bind: 'class' },
           },
         ],
         []
@@ -195,7 +614,7 @@ describe('Pattern candidate identification', () => {
         [
           {
             type: 'METHOD',
-            fqn: '$method',
+            fqn: { bind: 'method' },
             name: 'run',
             parameterFqns: ['java.lang.String'],
             returnTypeFqn: 'void',
@@ -240,27 +659,19 @@ describe('Pattern candidate identification', () => {
         [
           {
             type: 'METHOD',
-            fqn: '$caller',
-            name: '',
-            parameterFqns: ['$parameter'],
-            returnTypeFqn: '',
-            modifiers: [],
+            fqn: { bind: 'caller' },
+            parameterFqns: [{ bind: 'parameter' }],
           },
           {
             type: 'METHOD',
-            fqn: '$called',
-            name: '',
-            parameterFqns: [],
-            returnTypeFqn: '',
-            modifiers: [],
+            fqn: { bind: 'called' },
           },
         ],
         [
           {
             type: 'CALLS',
-            callingMethodFqn: '$caller',
-            calledMethodFqn: '$called',
-            targetObjectFqn: '',
+            callingMethodFqn: { equalsBinding: 'caller' },
+            calledMethodFqn: { equalsBinding: 'called' },
             insideLoop: false,
             insideConditional: false,
             isConstructorCall: false,
