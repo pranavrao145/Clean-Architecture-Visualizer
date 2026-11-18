@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import { CodebaseASG } from '../../../src/entity/CodebaseASG.js';
+import { AdapterDesignPattern } from '../../../src/entity/AdapterDesignPattern.js';
 import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.js';
 import { PatternId } from '../../../src/entity/PatternId.js';
 import { PatternName } from '../../../src/entity/PatternName.js';
@@ -24,6 +25,17 @@ const singletonDefinition: PatternDefinition = {
 };
 
 describe('CommonPatternFactory', () => {
+  it('creates the Adapter design pattern', async () => {
+    const definition: PatternDefinition = {
+      ...singletonDefinition,
+      id: PatternId.Adapter,
+      metadata: { ...singletonDefinition.metadata, patternName: PatternName.Adapter },
+    };
+    const pattern = await new CommonPatternFactory().create(PatternId.Adapter, definition);
+    expect(pattern).toBeInstanceOf(AdapterDesignPattern);
+    expect(pattern.candidateVerification(new CodebaseASG([], []))).toBe(false);
+  });
+
   it('creates the Singleton design pattern', async () => {
     const pattern = await new CommonPatternFactory().create(
       PatternId.Singleton,
