@@ -1,4 +1,5 @@
 import type { PatternDefinition } from '../types/patternDefinition.js';
+import { AdapterDesignPattern } from './AdapterDesignPattern.js';
 import type { Pattern } from './Pattern.js';
 import type { PatternFactory } from './PatternFactory.js';
 import { PatternId } from './PatternId.js';
@@ -8,6 +9,7 @@ type PatternConstructor = new (data: PatternDefinition) => Pattern;
 
 const patternRegistry: Record<PatternId, PatternConstructor> = {
   [PatternId.Singleton]: SingletonDesignPattern,
+  [PatternId.Adapter]: AdapterDesignPattern,
 };
 
 export class CommonPatternFactory implements PatternFactory {
