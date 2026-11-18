@@ -1,6 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { PatternsAccess } from '../../../src/data_access/PatternsAccess.js';
 import { CommonPatternFactory } from '../../../src/entity/CommonPatternFactory.js';
+import { CodebaseASG } from '../../../src/entity/CodebaseASG.js';
 import { PatternAnalyzerController } from '../../../src/interface_adapter/pattern-analyzer/pattern-analyzer-controller.js';
 import { PatternAnalyzerPresenter } from '../../../src/interface_adapter/pattern-analyzer/pattern-analyzer-presenter.js';
 import { PatternAnalyzerInteractor } from '../../../src/use_case/pattern-analyzer/pattern-analyzer-interactor.js';
@@ -43,6 +44,33 @@ describe('Pattern Analyzer use case', () => {
     ]);
     expect(body.patternInstances?.map((p) => [p.id, p.classFqns])).toEqual([
       ['singleton-0', ['app.Logger']],
+    ]);
+  });
+
+  it('detects an Adapter using parser-provided evidence', async () => {
+    const graph = new CodebaseASG(
+      [
+        { type: 'INTERFACE', fqn: 'Target', name: 'Target', packageName: '', modifiers: [] },
+        { type: 'CLASS', fqn: 'Adapter', name: 'Adapter', packageName: '', modifiers: [], supertypeFqns: ['Target'] },
+        { type: 'CLASS', fqn: 'Adaptee', name: 'Adaptee', packageName: '', modifiers: [], supertypeFqns: [] },
+        { type: 'FIELD', fqn: 'Adapter.delegate', name: 'delegate', typeFqn: 'Adaptee', modifiers: [] },
+        { type: 'METHOD', fqn: 'Target.play()', name: 'play', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+        { type: 'METHOD', fqn: 'Adapter.play()', name: 'play', parameterFqns: [], returnTypeFqn: 'void', modifiers: ['PUBLIC'] },
+      ],
+      [
+        { type: 'IMPLEMENTS', interfaceFqn: 'Target', implementingClassFqn: 'Adapter', methodImplementations: [
+          { interfaceMethodFqn: 'Target.play()', implementationMethodFqn: 'Adapter.play()' },
+        ] },
+        { type: 'HAS_FIELD', ownerFqn: 'Adapter', fieldFqn: 'Adapter.delegate' },
+        { type: 'HAS_METHOD', ownerFqn: 'Target', methodFqn: 'Target.play()' },
+        { type: 'HAS_METHOD', ownerFqn: 'Adapter', methodFqn: 'Adapter.play()' },
+        { type: 'CALLS', callingMethodFqn: 'Adapter.play()', calledMethodFqn: 'Adaptee.execute()', targetObjectFqn: 'Adapter.delegate', insideLoop: false, insideConditional: false, isConstructorCall: false, isStaticCall: false },
+      ]
+    );
+    const { status, body } = await analyze(['adapter'], async () => graph);
+    expect(status).toBe(200);
+    expect(body.patternInstances?.map((p) => [p.id, p.classFqns])).toEqual([
+      ['adapter-0', ['Target', 'Adapter', 'Adaptee']],
     ]);
   });
 

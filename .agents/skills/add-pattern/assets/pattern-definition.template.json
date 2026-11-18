@@ -6,9 +6,9 @@
       "description": "<Derived short user-facing description>",
       "learningInfo": "<Derived explanation of why and when this pattern is useful>"
     },
-    "candidateTopology": {
+    "candidateTopologies": [{
       "nodes": [],
       "edges": []
-    }
+    }]
   }
 }

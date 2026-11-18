@@ -21,7 +21,7 @@ const pattern = new TestPattern({
     description: 'What it is',
     learningInfo: 'When to use it',
   },
-  candidateTopology: { nodes: [], edges: [] },
+  candidateTopologies: [{ nodes: [], edges: [] }],
 });
 
 // The nodes and edges of the singleton in the fixture.
@@ -76,6 +76,23 @@ describe('CodebaseInfoUML', () => {
     );
   });
 
+  it('does not display inherited method edges as declared members', () => {
+    const asg = new CodebaseASG(
+      [
+        { type: 'INTERFACE', fqn: 'Parent', name: 'Parent', packageName: '', modifiers: [] },
+        { type: 'INTERFACE', fqn: 'Child', name: 'Child', packageName: '', modifiers: [] },
+        { type: 'METHOD', fqn: 'Parent.run()', name: 'run', parameterFqns: [], returnTypeFqn: 'void', modifiers: [] },
+      ],
+      [
+        { type: 'HAS_METHOD', ownerFqn: 'Parent', methodFqn: 'Parent.run()' },
+        { type: 'HAS_METHOD', ownerFqn: 'Child', methodFqn: 'Parent.run()', isInherited: true },
+      ]
+    );
+    const uml = new CodebaseInfoUML(asg, []);
+    expect(classNamed(uml, 'Parent').members).toHaveLength(1);
+    expect(classNamed(uml, 'Child').members).toHaveLength(0);
+  });
+
   it('lists enum constants as members', () => {
     const uml = new CodebaseInfoUML(makeSingletonASG(), []);
 
@@ -94,6 +111,7 @@ describe('CodebaseInfoUML', () => {
           name: 'A',
           packageName: 'a',
           modifiers: [],
+          supertypeFqns: [],
         },
         {
           type: 'METHOD',
@@ -130,6 +148,7 @@ describe('CodebaseInfoUML', () => {
           name: 'Same',
           packageName: 'a',
           modifiers: [],
+          supertypeFqns: [],
         },
         {
           type: 'CLASS',
@@ -137,6 +156,7 @@ describe('CodebaseInfoUML', () => {
           name: 'Same',
           packageName: 'b',
           modifiers: [],
+          supertypeFqns: [],
         },
         {
           type: 'CLASS',
@@ -144,6 +164,7 @@ describe('CodebaseInfoUML', () => {
           name: 'Child',
           packageName: 'a',
           modifiers: [],
+          supertypeFqns: [],
         },
       ],
       [{ type: 'EXTENDS', parentClassFqn: 'Same', childClassFqn: 'a.Child' }]

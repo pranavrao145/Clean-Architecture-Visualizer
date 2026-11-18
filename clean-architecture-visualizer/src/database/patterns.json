@@ -1,48 +1,258 @@
 {
-    "singleton": {
-        "metadata": {
-            "patternName": "Singleton",
-            "patternType": "Design Pattern",
-            "description": "Creational design pattern. Ensures a class has only one instance and provides a global point of access to it.",
-            "learningInfo": "Use this pattern when only one instance of a class is needed across the application."
-        },
-        "candidateTopology": {
+  "singleton": {
+    "metadata": {
+      "patternName": "Singleton",
+      "patternType": "Design Pattern",
+      "description": "Creational design pattern. Ensures a class has only one instance and provides a global point of access to it.",
+      "learningInfo": "Use this pattern when only one instance of a class is needed across the application."
+    },
+    "candidateTopologies": [
+      {
+        "nodes": [
+          {
+            "type": "CLASS",
+            "fqn": { "bind": "singletonClass" }
+          },
+          {
+            "type": "FIELD",
+            "fqn": { "bind": "instanceField" },
+            "typeFqn": { "equalsBinding": "singletonClass" },
+            "modifiers": {
+              "oneOf": [["PRIVATE", "STATIC"], ["STATIC", "PRIVATE"]]
+            }
+          },
+          {
+            "type": "METHOD",
+            "fqn": { "bind": "getInstanceMethod" },
+            "returnTypeFqn": { "equalsBinding": "singletonClass" },
+            "modifiers": {
+              "oneOf": [["PUBLIC", "STATIC"], ["STATIC", "PUBLIC"]]
+            }
+          }
+        ],
+        "edges": [
+          {
+            "type": "HAS_FIELD",
+            "ownerFqn": { "equalsBinding": "singletonClass" },
+            "fieldFqn": { "equalsBinding": "instanceField" }
+          },
+          {
+            "type": "HAS_METHOD",
+            "ownerFqn": { "equalsBinding": "singletonClass" },
+            "methodFqn": { "equalsBinding": "getInstanceMethod" }
+          }
+        ]
+      }
+    ]
+  },
+  "adapter": {
+    "metadata": {
+      "patternName": "Adapter",
+      "patternType": "Design Pattern",
+      "description": "Structural design pattern. Adapts an incompatible interface to a target interface.",
+      "learningInfo": "Use an adapter to let clients use an existing class through a different interface."
+    },
+    "candidateTopologies": [
+      {
+        "nodes": [
+          { "type": "INTERFACE", "fqn": { "bind": "target" } },
+          { "type": "CLASS", "fqn": { "bind": "adapter" } },
+          { "type": "CLASS", "fqn": { "bind": "adaptee" } },
+          {
+            "type": "FIELD",
+            "fqn": { "bind": "field" },
+            "typeFqn": { "equalsBinding": "adaptee" }
+          }
+        ],
+        "edges": [
+          {
+            "type": "IMPLEMENTS",
+            "interfaceFqn": { "equalsBinding": "target" },
+            "implementingClassFqn": { "equalsBinding": "adapter" }
+          },
+          {
+            "type": "HAS_FIELD",
+            "ownerFqn": { "equalsBinding": "adapter" },
+            "fieldFqn": { "equalsBinding": "field" }
+          }
+        ],
+        "collectMatches": [
+          {
             "nodes": [
-                {
-                    "type": "CLASS",
-                    "fqn": "$singletonClass",
-                    "name": "",
-                    "packageName": "",
-                    "modifiers": []
-                },
-                {
-                    "type": "FIELD",
-                    "fqn": "$instanceField",
-                    "name": "",
-                    "typeFqn": "$singletonClass",
-                    "modifiers": ["PRIVATE", "STATIC"]
-                },
-                {
-                    "type": "METHOD",
-                    "fqn": "$getInstanceMethod",
-                    "name": "",
-                    "parameterFqns": [],
-                    "returnTypeFqn": "$singletonClass",
-                    "modifiers": ["PUBLIC", "STATIC"]
-                }
+              {
+                "type": "METHOD",
+                "fqn": { "bind": "targetMethod" },
+                "modifiers": { "excludes": ["PRIVATE", "STATIC"] }
+              }
             ],
             "edges": [
-                {
-                    "type": "HAS_FIELD",
-                    "ownerFqn": "$singletonClass",
-                    "fieldFqn": "$instanceField"
-                },
-                {
-                    "type": "HAS_METHOD",
-                    "ownerFqn": "$singletonClass",
-                    "methodFqn": "$getInstanceMethod"
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "target" },
+                "methodFqn": { "equalsBinding": "targetMethod" }
+              }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [
+              { "type": "METHOD", "fqn": { "bind": "implementation" } }
+            ],
+            "edges": [
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "adapter" },
+                "methodFqn": { "equalsBinding": "implementation" }
+              },
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "target" },
+                "methodFqn": { "bind": "mappedTargetMethod" }
+              },
+              {
+                "type": "IMPLEMENTS",
+                "interfaceFqn": { "equalsBinding": "target" },
+                "implementingClassFqn": { "equalsBinding": "adapter" },
+                "methodImplementations": {
+                  "contains": {
+                    "interfaceMethodFqn": {
+                      "equalsBinding": "mappedTargetMethod"
+                    },
+                    "implementationMethodFqn": {
+                      "equalsBinding": "implementation"
+                    }
+                  }
                 }
+              },
+              {
+                "type": "CALLS",
+                "callingMethodFqn": { "equalsBinding": "implementation" },
+                "targetObjectFqn": { "equalsBinding": "field" },
+                "isConstructorCall": false,
+                "isStaticCall": false
+              }
             ]
-        }
-    }
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "bind": "callee" } }],
+            "edges": [
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "adapter" },
+                "methodFqn": { "bind": "caller" }
+              },
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "target" },
+                "methodFqn": { "bind": "mappedTargetMethod" }
+              },
+              {
+                "type": "IMPLEMENTS",
+                "interfaceFqn": { "equalsBinding": "target" },
+                "implementingClassFqn": { "equalsBinding": "adapter" },
+                "methodImplementations": {
+                  "contains": {
+                    "interfaceMethodFqn": {
+                      "equalsBinding": "mappedTargetMethod"
+                    },
+                    "implementationMethodFqn": { "equalsBinding": "caller" }
+                  }
+                }
+              },
+              {
+                "type": "CALLS",
+                "callingMethodFqn": { "equalsBinding": "caller" },
+                "calledMethodFqn": { "equalsBinding": "callee" },
+                "targetObjectFqn": { "equalsBinding": "field" },
+                "isConstructorCall": false,
+                "isStaticCall": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "nodes": [
+          {
+            "type": "CLASS",
+            "fqn": { "bind": "adapter" },
+            "supertypeFqns": { "oneOf": [[], ["java.lang.Object"]] }
+          },
+          {
+            "type": { "oneOf": ["CLASS", "INTERFACE"] },
+            "fqn": { "bind": "adaptee" }
+          },
+          {
+            "type": "FIELD",
+            "fqn": { "bind": "field" },
+            "typeFqn": { "equalsBinding": "adaptee" }
+          }
+        ],
+        "edges": [
+          {
+            "type": "HAS_FIELD",
+            "ownerFqn": { "equalsBinding": "adapter" },
+            "fieldFqn": { "equalsBinding": "field" }
+          }
+        ],
+        "collectMatches": [
+          {
+            "nodes": [
+              {
+                "type": "METHOD",
+                "fqn": { "bind": "adapterMethod" },
+                "modifiers": { "excludes": ["PRIVATE", "STATIC"] }
+              }
+            ],
+            "edges": [
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "adapter" },
+                "methodFqn": { "equalsBinding": "adapterMethod" },
+                "isInherited": false
+              }
+            ],
+            "minMatches": 1
+          },
+          {
+            "nodes": [],
+            "edges": [
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "adapter" },
+                "methodFqn": { "bind": "caller" },
+                "isInherited": false
+              },
+              {
+                "type": "CALLS",
+                "callingMethodFqn": { "equalsBinding": "caller" },
+                "targetObjectFqn": { "equalsBinding": "field" },
+                "isConstructorCall": false,
+                "isStaticCall": false
+              }
+            ]
+          },
+          {
+            "nodes": [{ "type": "METHOD", "fqn": { "bind": "callee" } }],
+            "edges": [
+              {
+                "type": "HAS_METHOD",
+                "ownerFqn": { "equalsBinding": "adapter" },
+                "methodFqn": { "bind": "caller" },
+                "isInherited": false
+              },
+              {
+                "type": "CALLS",
+                "callingMethodFqn": { "equalsBinding": "caller" },
+                "calledMethodFqn": { "equalsBinding": "callee" },
+                "targetObjectFqn": { "equalsBinding": "field" },
+                "isConstructorCall": false,
+                "isStaticCall": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
