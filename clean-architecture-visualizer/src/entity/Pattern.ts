@@ -7,11 +7,41 @@ import { CodebaseASG } from "./CodebaseASG.js";
 
 type Bindings = Map<string, unknown>;
 
+const QUERY_OPERATORS = new Set([
+  "bind",
+  "equalsBinding",
+  "contains",
+  "excludes",
+  "oneOf",
+]);
+
+// Validates a value nested in contains or oneOf: either a query operator or an
+// object whose properties are each queries. These cannot introduce bindings.
+function validateNestedValue(value: unknown, names: Set<string>): void {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const properties = Object.entries(value);
+
+    if (properties.length !== 1 || !QUERY_OPERATORS.has(properties[0][0])) {
+      for (const [, property] of properties) {
+        validateQueryValue(property, names, true);
+      }
+
+      return;
+    }
+  }
+
+  validateQueryValue(value, names, true);
+}
+
 // Check binding names before matching; actual values are stored separately.
-function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
+function validateQueryValue(
+  value: unknown,
+  names: Set<string>,
+  insideContains = false,
+): Set<string> {
   if (Array.isArray(value)) {
     return value.reduce<Set<string>>(
-      (current, item) => validateQueryValue(item, current),
+      (current, item) => validateQueryValue(item, current, insideContains),
       names,
     );
   }
@@ -28,6 +58,31 @@ function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
 
   const [operator, argument] = entries[0];
 
+  if (operator === "contains") {
+    validateNestedValue(argument, names);
+    return names;
+  }
+
+  if (operator === "oneOf") {
+    if (!Array.isArray(argument) || argument.length === 0) {
+      throw new Error("The oneOf operator requires a non-empty array");
+    }
+
+    for (const alternative of argument) {
+      validateNestedValue(alternative, names);
+    }
+
+    return names;
+  }
+
+  if (operator === "excludes") {
+    if (!Array.isArray(argument)) {
+      throw new Error("The excludes operator requires an array");
+    }
+
+    return names;
+  }
+
   if (operator === "bind" || operator === "equalsBinding") {
     if (typeof argument !== "string" || argument.length === 0) {
       throw new Error(`Invalid ${operator} binding name`);
@@ -39,6 +94,10 @@ function validateQueryValue(value: unknown, names: Set<string>): Set<string> {
       }
 
       return names;
+    }
+
+    if (insideContains) {
+      throw new Error("Cannot introduce a binding inside contains or oneOf");
     }
 
     if (names.has(argument)) {
@@ -376,6 +435,36 @@ export abstract class Pattern {
     if (entries.length === 1) {
       const [operator, value] = entries[0];
 
+      if (operator === "contains") {
+        return Array.isArray(candidateValue) &&
+          candidateValue.some(
+            (item) => this.matchValue(value, item, bindings) !== undefined,
+          )
+          ? bindings
+          : undefined;
+      }
+
+      if (operator === "oneOf") {
+        return Array.isArray(value) &&
+          value.some(
+            (alternative) =>
+              this.matchValue(alternative, candidateValue, bindings) !==
+              undefined,
+          )
+          ? bindings
+          : undefined;
+      }
+
+      if (operator === "excludes") {
+        return Array.isArray(candidateValue) &&
+          Array.isArray(value) &&
+          value.every((excluded) =>
+            candidateValue.every((item) => !isDeepStrictEqual(item, excluded)),
+          )
+          ? bindings
+          : undefined;
+      }
+
       if (operator === "bind" || operator === "equalsBinding") {
         if (typeof value !== "string" || value.length === 0) {
           throw new Error(`Invalid ${operator} binding name`);
@@ -394,6 +483,7 @@ export abstract class Pattern {
         return this.bindValue(value, candidateValue, bindings);
       }
     }
+
     if (candidateValue === null || typeof candidateValue !== "object") {
       return undefined;
     }

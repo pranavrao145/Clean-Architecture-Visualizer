@@ -110,6 +110,19 @@ Pattern values follow these rules:
   reported before matching, even when the input graph is empty. Bindings are
   local to a match and do not carry across topologies. Query properties are
   evaluated in declaration order, nodes before edges.
+- `{ "contains": value }` matches an array containing an element that matches
+  `value`. For object elements, specify the properties to match; all specified
+  properties must match the same element. `contains` may reference existing
+  bindings but cannot introduce new ones.
+- `{ "excludes": [values...] }` matches an array containing none of the
+  listed literal values. An empty array of exclusions matches any array.
+- `{ "oneOf": [values...] }` matches a value that matches at least one of the
+  alternatives. It works anywhere a value can appear, including a node or
+  edge's `type`, and each alternative can be a literal, an
+  `equalsBinding`, an array or an object of properties. It requires a
+  non-empty array. Like `contains`, it may reference existing bindings but
+  cannot introduce new ones. For example, `"type": { "oneOf": ["CLASS",
+  "INTERFACE"] }` matches either node type.
 - Other scalar values, including booleans, and declared object properties are
   matched exactly.
 - Extra ASG nodes and edges are allowed. Each returned `CodebaseASG` contains
@@ -119,7 +132,10 @@ Pattern values follow these rules:
 For example, the singleton topology binds its class FQN as `singletonClass`,
 then requires the field's `typeFqn` and the method's
 `returnTypeFqn` to reference that same FQN. Names and modifiers that are not
-part of the required topology are omitted.
+part of the required topology are omitted. Its modifier lists use `oneOf`
+because arrays match in order and the parser keeps source order: `private
+static` and `static private` produce `["PRIVATE", "STATIC"]` and
+`["STATIC", "PRIVATE"]`, and both should match.
 
 For example, the following topology matches two methods with the same complete
 parameter list, whether it is empty or not:
@@ -185,8 +201,10 @@ each matched class, together with the ownership edges:
   does not record which collection or match contributed each node or edge.
   Identical final candidate subgraphs are deduplicated.
 
-The array of topologies still expresses alternatives. Negative queries,
-transitive paths, and inspecting data absent from the ASG are not supported.
+The array of topologies still expresses alternatives of a whole topology; use
+`oneOf` for alternatives within a single value. General negative
+subgraph queries, transitive paths, and inspecting data absent from the ASG
+are not supported.
 
 ## Adding a New Pattern
 

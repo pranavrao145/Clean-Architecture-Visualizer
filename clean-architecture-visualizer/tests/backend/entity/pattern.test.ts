@@ -93,6 +93,168 @@ describe('Pattern candidate identification', () => {
     ]);
   });
 
+    it('collects methods whose bindings occur together in an array element', () => {
+      const topology: PatternDefinition['candidateTopologies'][number] = {
+        nodes: [{ type: 'CLASS', fqn: { bind: 'owner' } }],
+        edges: [],
+        collectMatches: [{
+          nodes: [{ type: 'METHOD', fqn: { bind: 'method' } }],
+          edges: [
+            { type: 'HAS_METHOD', ownerFqn: { equalsBinding: 'owner' }, methodFqn: { equalsBinding: 'method' } },
+            {
+              type: 'IMPLEMENTS',
+              implementingClassFqn: { equalsBinding: 'owner' },
+              methodImplementations: {
+                contains: {
+                  interfaceMethodFqn: 'Target.first',
+                  implementationMethodFqn: { equalsBinding: 'method' },
+                },
+              },
+            },
+          ],
+        }],
+      };
+
+      const graph = new CodebaseASG(collectionGraph.getNodes(), [
+        ...collectionGraph.getEdges(),
+        {
+          type: 'IMPLEMENTS',
+          interfaceFqn: 'Target',
+          implementingClassFqn: 'A',
+          methodImplementations: [
+            { interfaceMethodFqn: 'Target.first', implementationMethodFqn: 'A.first' },
+            { interfaceMethodFqn: 'Target.second', implementationMethodFqn: 'A.second' },
+          ],
+        },
+        { type: 'IMPLEMENTS', interfaceFqn: 'Target', implementingClassFqn: 'B', methodImplementations: [] },
+      ]);
+      const pattern = new TestPattern({ ...definition([], []), candidateTopologies: [topology] });
+
+      expect(pattern.candidateIdentification(graph).map((candidate) =>
+        candidate.getNodes().map((node) => node.fqn)
+      )).toEqual([['A', 'A.first'], ['B'], ['C']]);
+    });
+
+    it('excludes methods with any forbidden modifier while allowing empty modifiers', () => {
+      const pattern = new TestPattern(definition([
+        { type: 'METHOD', modifiers: { excludes: ['PRIVATE', 'STATIC'] } },
+      ], []));
+      const method = {
+        type: 'METHOD' as const,
+        fqn: 'm',
+        name: 'm',
+        parameterFqns: [],
+        returnTypeFqn: 'void',
+      };
+      const graph = new CodebaseASG([
+        { ...method, fqn: 'empty', modifiers: [] },
+        { ...method, fqn: 'public', modifiers: ['PUBLIC'] },
+        { ...method, fqn: 'private', modifiers: ['PRIVATE'] },
+        { ...method, fqn: 'static', modifiers: ['PUBLIC', 'STATIC'] },
+      ], []);
+      expect(pattern.candidateIdentification(graph).map((candidate) => candidate.getNodes()[0].fqn))
+        .toEqual(['empty', 'public']);
+    });
+
+    it('matches a scalar array element with contains', () => {
+      const pattern = new TestPattern(definition([
+        { type: 'METHOD', modifiers: { contains: 'PUBLIC' } },
+      ], []));
+      const method = {
+        type: 'METHOD' as const,
+        name: 'm',
+        parameterFqns: [],
+        returnTypeFqn: 'void',
+      };
+      const graph = new CodebaseASG([
+        { ...method, fqn: 'public', modifiers: ['PUBLIC', 'STATIC'] },
+        { ...method, fqn: 'private', modifiers: ['PRIVATE'] },
+        { ...method, fqn: 'empty', modifiers: [] },
+      ], []);
+      expect(pattern.candidateIdentification(graph).map((candidate) => candidate.getNodes()[0].fqn))
+        .toEqual(['public']);
+    });
+
+    it('validates contains bindings and excludes operands before matching', () => {
+      const badContains = definition([], [{
+        type: 'IMPLEMENTS',
+        methodImplementations: { contains: { implementationMethodFqn: { equalsBinding: 'missing' } } },
+      }]);
+      const bindsInsideContains = definition([], [{
+        type: 'IMPLEMENTS',
+        methodImplementations: { contains: { implementationMethodFqn: { bind: 'local' } } },
+      }] as never);
+      const badExcludes = definition([
+        { type: 'METHOD', modifiers: { excludes: 'PRIVATE' } },
+      ] as never, []);
+      expect(() => new TestPattern(badContains).candidateIdentification(new CodebaseASG([], [])))
+        .toThrow('Unbound query reference: missing');
+      expect(() => new TestPattern(bindsInsideContains).candidateIdentification(new CodebaseASG([], [])))
+        .toThrow('Cannot introduce a binding inside contains');
+      expect(() => new TestPattern(badExcludes).candidateIdentification(new CodebaseASG([], [])))
+        .toThrow('The excludes operator requires an array');
+    });
+
+    it('matches either of several node types with oneOf', () => {
+      const pattern = new TestPattern(definition([
+        { type: { oneOf: ['CLASS', 'INTERFACE'] }, fqn: { bind: 'type' } },
+      ], []));
+      const graph = new CodebaseASG([
+        { type: 'CLASS', fqn: 'C', name: 'C', packageName: '', modifiers: [], supertypeFqns: [] },
+        { type: 'INTERFACE', fqn: 'I', name: 'I', packageName: '', modifiers: [] },
+        { type: 'ENUM', fqn: 'E', name: 'E', packageName: '', constants: [] },
+      ], []);
+      expect(pattern.candidateIdentification(graph).map((candidate) => candidate.getNodes()[0].fqn))
+        .toEqual(['C', 'I']);
+    });
+
+    it('matches scalar, binding and object alternatives with oneOf', () => {
+      const pattern = new TestPattern(definition([
+        { type: 'CLASS', fqn: { bind: 'owner' } },
+        {
+          type: 'FIELD',
+          typeFqn: { oneOf: ['String', { equalsBinding: 'owner' }] },
+        },
+      ], []));
+      const field = { type: 'FIELD' as const, name: 'f', modifiers: [] };
+      const graph = new CodebaseASG([
+        { type: 'CLASS', fqn: 'A', name: 'A', packageName: '', modifiers: [], supertypeFqns: [] },
+        { ...field, fqn: 'string', typeFqn: 'String' },
+        { ...field, fqn: 'self', typeFqn: 'A' },
+        { ...field, fqn: 'other', typeFqn: 'B' },
+      ], []);
+      expect(pattern.candidateIdentification(graph).map((candidate) =>
+        candidate.getNodes().map((node) => node.fqn)
+      )).toEqual([['A', 'string'], ['A', 'self']]);
+    });
+
+    it('matches an unmatched value with no oneOf alternative', () => {
+      const pattern = new TestPattern(definition([
+        { type: { oneOf: ['CLASS', 'INTERFACE'] } },
+      ], []));
+      const graph = new CodebaseASG([
+        { type: 'ENUM', fqn: 'E', name: 'E', packageName: '', constants: [] },
+      ], []);
+      expect(pattern.candidateIdentification(graph)).toHaveLength(0);
+    });
+
+    it('validates oneOf operands before matching', () => {
+      const empty = definition([{ type: { oneOf: [] } }] as never, []);
+      const notArray = definition([{ type: { oneOf: 'CLASS' } }] as never, []);
+      const binds = definition([
+        { type: 'CLASS', fqn: { oneOf: [{ bind: 'local' }] } },
+      ] as never, []);
+      const unbound = definition([
+        { type: 'CLASS', fqn: { oneOf: [{ equalsBinding: 'missing' }] } },
+      ] as never, []);
+      const identify = (pattern: PatternDefinition) =>
+        new TestPattern(pattern).candidateIdentification(new CodebaseASG([], []));
+      expect(() => identify(empty)).toThrow('The oneOf operator requires a non-empty array');
+      expect(() => identify(notArray)).toThrow('The oneOf operator requires a non-empty array');
+      expect(() => identify(binds)).toThrow('Cannot introduce a binding inside contains or oneOf');
+      expect(() => identify(unbound)).toThrow('Unbound query reference: missing');
+    });
+
   it('requires the requested number of distinct collection matches', () => {
     const collection = collectionTopology.collectMatches![0];
     const pattern = new TestPattern({
@@ -271,7 +433,6 @@ describe('Pattern candidate identification', () => {
       name: 'Target',
       packageName: 'example',
       modifiers: [],
-      supertypeFqns: [],
     };
 
     const matches = pattern.candidateIdentification(

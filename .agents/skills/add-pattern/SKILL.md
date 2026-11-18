@@ -115,6 +115,15 @@ blank or accepted.
 - `{ "bind": "name" }` introduces a binding once and
   `{ "equalsBinding": "name" }` compares against it. Duplicate bindings and
   references not bound earlier are errors.
+- Array queries can use `{ "contains": value }` to match one element, including
+  an object with properties compared to existing bindings, or
+  `{ "excludes": [values...] }` to rule out literal elements. `contains`
+  cannot introduce bindings.
+- `{ "oneOf": [values...] }` matches any one of several alternatives for a
+  value, including a node or edge `type` such as
+  `{ "oneOf": ["CLASS", "INTERFACE"] }`. It needs a non-empty array and cannot
+  introduce bindings. Prefer it over duplicating a whole topology when only one
+  value differs.
 - Omitted properties are wildcards. Strings and arrays, including empty
   values, match exactly; arrays match in length and value/order.
 - Literal strings, including strings beginning with `$`, have no special

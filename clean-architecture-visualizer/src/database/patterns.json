@@ -16,13 +16,17 @@
                     "type": "FIELD",
                     "fqn": { "bind": "instanceField" },
                     "typeFqn": { "equalsBinding": "singletonClass" },
-                    "modifiers": ["PRIVATE", "STATIC"]
+                    "modifiers": {
+                        "oneOf": [["PRIVATE", "STATIC"], ["STATIC", "PRIVATE"]]
+                    }
                 },
                 {
                     "type": "METHOD",
                     "fqn": { "bind": "getInstanceMethod" },
                     "returnTypeFqn": { "equalsBinding": "singletonClass" },
-                    "modifiers": ["PUBLIC", "STATIC"]
+                    "modifiers": {
+                        "oneOf": [["PUBLIC", "STATIC"], ["STATIC", "PUBLIC"]]
+                    }
                 }
             ],
             "edges": [

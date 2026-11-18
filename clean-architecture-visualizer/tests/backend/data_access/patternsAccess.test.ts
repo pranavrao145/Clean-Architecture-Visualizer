@@ -166,12 +166,12 @@ describe('PatternsAccess', () => {
     ).rejects.toThrow('Invalid candidate topologies for pattern: singleton');
   });
 
-  it('rejects the removed oneOf operator when identifying candidates', async () => {
+  it('rejects an unknown query operator when identifying candidates', async () => {
     const data = {
       ...customPatternData.singleton,
       candidateTopologies: [
         {
-          nodes: [{ type: 'CLASS', name: { oneOf: ['First', 'Second'] } }],
+          nodes: [{ type: 'CLASS', name: { anyOf: ['First', 'Second'] } }],
           edges: [],
         },
       ],
@@ -180,7 +180,7 @@ describe('PatternsAccess', () => {
       singleton: data,
     }).buildPatterns([PatternId.Singleton]);
     expect(() => pattern.candidateIdentification(new CodebaseASG([], []))).toThrow(
-      'Unknown query operator: oneOf'
+      'Unknown query operator: anyOf'
     );
   });
 });
