@@ -6,43 +6,41 @@
             "description": "Creational design pattern. Ensures a class has only one instance and provides a global point of access to it.",
             "learningInfo": "Use this pattern when only one instance of a class is needed across the application."
         },
-        "candidateTopology": {
+        "candidateTopologies": [{
             "nodes": [
                 {
                     "type": "CLASS",
-                    "fqn": "$singletonClass",
-                    "name": "",
-                    "packageName": "",
-                    "modifiers": []
+                    "fqn": { "bind": "singletonClass" }
                 },
                 {
                     "type": "FIELD",
-                    "fqn": "$instanceField",
-                    "name": "",
-                    "typeFqn": "$singletonClass",
-                    "modifiers": ["PRIVATE", "STATIC"]
+                    "fqn": { "bind": "instanceField" },
+                    "typeFqn": { "equalsBinding": "singletonClass" },
+                    "modifiers": {
+                        "oneOf": [["PRIVATE", "STATIC"], ["STATIC", "PRIVATE"]]
+                    }
                 },
                 {
                     "type": "METHOD",
-                    "fqn": "$getInstanceMethod",
-                    "name": "",
-                    "parameterFqns": [],
-                    "returnTypeFqn": "$singletonClass",
-                    "modifiers": ["PUBLIC", "STATIC"]
+                    "fqn": { "bind": "getInstanceMethod" },
+                    "returnTypeFqn": { "equalsBinding": "singletonClass" },
+                    "modifiers": {
+                        "oneOf": [["PUBLIC", "STATIC"], ["STATIC", "PUBLIC"]]
+                    }
                 }
             ],
             "edges": [
                 {
                     "type": "HAS_FIELD",
-                    "ownerFqn": "$singletonClass",
-                    "fieldFqn": "$instanceField"
+                    "ownerFqn": { "equalsBinding": "singletonClass" },
+                    "fieldFqn": { "equalsBinding": "instanceField" }
                 },
                 {
                     "type": "HAS_METHOD",
-                    "ownerFqn": "$singletonClass",
-                    "methodFqn": "$getInstanceMethod"
+                    "ownerFqn": { "equalsBinding": "singletonClass" },
+                    "methodFqn": { "equalsBinding": "getInstanceMethod" }
                 }
             ]
-        }
+        }]
     }
 }

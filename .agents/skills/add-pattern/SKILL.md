@@ -229,9 +229,8 @@ name, signature, modifier, or relationship that cannot be inferred.
    is known; do not repeat broad repository searches or reopen files already
    read to answer the same question.
 3. Choose the smallest matching starter from
-   [topology presets](./assets/pattern-topology-presets.json). Treat preset
-   empty strings and empty arrays as intentional wildcards; replace them only
-   when the user requests an exact value.
+   [topology presets](./assets/pattern-topology-presets.json). Omitted
+   properties are wildcards; empty strings and arrays are exact values.
    Use [the metadata starter](./assets/pattern-definition.template.json) for
    the JSON entry.
    If no preset matches, compose the topology directly from the clarified
@@ -276,10 +275,26 @@ blank or accepted.
 
 ## Topology rules
 
-- A string beginning with `$` is a binding placeholder. Reusing it enforces
-  equality across nodes and edges.
-- `""` is a string wildcard and `[]` is an array wildcard.
-- Non-empty arrays must match in length and value/order.
+- `{ "bind": "name" }` introduces a binding once and
+  `{ "equalsBinding": "name" }` compares against it. Duplicate bindings and
+  references not bound earlier are errors.
+- Array queries can use `{ "contains": value }` to match one element, including
+  an object with properties compared to existing bindings, or
+  `{ "excludes": [values...] }` to rule out literal elements. `contains`
+  cannot introduce bindings.
+- `{ "oneOf": [values...] }` matches any one of several alternatives for a
+  value, including a node or edge `type` such as
+  `{ "oneOf": ["CLASS", "INTERFACE"] }`. It needs a non-empty array and cannot
+  introduce bindings. Prefer it over duplicating a whole topology when only one
+  value differs.
+- Omitted properties are wildcards. Strings and arrays, including empty
+  values, match exactly; arrays match in length and value/order.
+- Literal strings, including strings beginning with `$`, have no special
+  meaning.
+- `candidateTopologies` is an array of alternative topologies.
+- An optional `collectMatches` array gathers each collection's matching `nodes`
+  and `edges` for a base candidate. `minMatches` defaults to zero. Collection
+  bindings are local; use base bindings to constrain their matches.
 - Use typed edges to connect selected nodes; do not rely on names alone.
 - Extra nodes and edges in the full ASG are allowed, but the entity must
   validate the exact candidate subgraph it receives.

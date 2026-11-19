@@ -6,17 +6,17 @@
       "description": "Fixture singleton description",
       "learningInfo": "Fixture singleton learning information"
     },
-    "candidateTopology": {
+    "candidateTopologies": [{
       "nodes": [
         {
           "type": "CLASS",
-          "fqn": "$fixtureSingletonClass",
-          "name": "$fixtureSingletonClass",
+          "fqn": { "bind": "fixtureSingletonClass" },
+          "name": { "equalsBinding": "fixtureSingletonClass" },
           "packageName": "fixture",
           "modifiers": ["PUBLIC"]
         }
       ],
       "edges": []
-    }
+    }]
   }
 }

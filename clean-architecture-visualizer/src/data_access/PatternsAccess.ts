@@ -1,11 +1,11 @@
-import defaultPatternData from '../database/patterns.json' with { type: 'json' };
-import type { Pattern } from '../entity/Pattern.js';
-import type { PatternFactory } from '../entity/PatternFactory.js';
-import { isPatternId, type PatternId } from '../entity/PatternId.js';
-import { isPatternName } from '../entity/PatternName.js';
-import { isPatternType } from '../entity/PatternType.js';
-import type { PatternDefinition } from '../types/patternDefinition.js';
-import type { PatternsAccessInterface } from './PatternsAccessInterface.js';
+import defaultPatternData from "../database/patterns.json" with { type: "json" };
+import type { Pattern } from "../entity/Pattern.js";
+import type { PatternFactory } from "../entity/PatternFactory.js";
+import { isPatternId, type PatternId } from "../entity/PatternId.js";
+import { isPatternName } from "../entity/PatternName.js";
+import { isPatternType } from "../entity/PatternType.js";
+import type { PatternDefinition } from "../types/patternDefinition.js";
+import type { PatternsAccessInterface } from "./PatternsAccessInterface.js";
 
 type PatternDataDefinition = {
   metadata: {
@@ -14,7 +14,7 @@ type PatternDataDefinition = {
     description: string;
     learningInfo: string;
   };
-  candidateTopology: unknown;
+  candidateTopologies: unknown;
 };
 
 export type PatternData = Record<string, PatternDataDefinition>;
@@ -25,7 +25,7 @@ export class PatternsAccess implements PatternsAccessInterface {
 
   constructor(
     patternFactory: PatternFactory,
-    patternData: PatternData = defaultPatternData
+    patternData: PatternData = defaultPatternData,
   ) {
     this.patternFactory = patternFactory;
     this.patternData = patternData;
@@ -42,16 +42,16 @@ export class PatternsAccess implements PatternsAccessInterface {
     const patterns = await Promise.all(
       Object.keys(this.patternData)
         .filter((patternDataKey) =>
-          requestedPatternIds.has(patternDataKey as PatternId)
+          requestedPatternIds.has(patternDataKey as PatternId),
         )
         .map((patternDataKey) => {
           const patternId = this.getPatternId(patternDataKey);
           const validatedDefinition = this.parseDefinition(
             patternId,
-            this.patternData[patternDataKey]
+            this.patternData[patternDataKey],
           );
           return this.patternFactory.create(patternId, validatedDefinition);
-        })
+        }),
     );
 
     return patterns;
@@ -67,18 +67,44 @@ export class PatternsAccess implements PatternsAccessInterface {
 
   private parseDefinition(
     patternId: PatternId,
-    definition: PatternDataDefinition
+    definition: PatternDataDefinition,
   ): PatternDefinition {
     if (!isPatternName(definition.metadata.patternName)) {
       throw new Error(
-        `Unknown pattern name: ${definition.metadata.patternName}`
+        `Unknown pattern name: ${definition.metadata.patternName}`,
       );
     }
 
     if (!isPatternType(definition.metadata.patternType)) {
       throw new Error(
-        `Unknown pattern type: ${definition.metadata.patternType}`
+        `Unknown pattern type: ${definition.metadata.patternType}`,
       );
+    }
+
+    if (
+      !Array.isArray(definition.candidateTopologies) ||
+      !definition.candidateTopologies.every(
+        (topology: unknown) =>
+          topology !== null &&
+          typeof topology === "object" &&
+          "nodes" in topology &&
+          Array.isArray(topology.nodes) &&
+          "edges" in topology &&
+          Array.isArray(topology.edges) &&
+          (!("collectMatches" in topology) ||
+            (Array.isArray(topology.collectMatches) &&
+              topology.collectMatches.every(
+                (collection: unknown) =>
+                  collection !== null &&
+                  typeof collection === "object" &&
+                  "nodes" in collection &&
+                  Array.isArray(collection.nodes) &&
+                  "edges" in collection &&
+                  Array.isArray(collection.edges),
+              ))),
+      )
+    ) {
+      throw new Error(`Invalid candidate topologies for pattern: ${patternId}`);
     }
 
     return {
@@ -89,8 +115,8 @@ export class PatternsAccess implements PatternsAccessInterface {
         description: definition.metadata.description,
         learningInfo: definition.metadata.learningInfo,
       },
-      candidateTopology:
-        definition.candidateTopology as PatternDefinition['candidateTopology'],
+      candidateTopologies:
+        definition.candidateTopologies as PatternDefinition["candidateTopologies"],
     };
   }
 }
