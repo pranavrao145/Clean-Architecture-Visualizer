@@ -114,6 +114,31 @@ describe("JavaParserCliAccess", () => {
       /JavaParser CLI failed: exit code 1\nbad source dir/,
     );
   });
+
+  it("runs the CLI once and reuses the ASG on later calls", async () => {
+    mockCliOutput(fixtureJson);
+
+    const [first, second] = await Promise.all([
+      javaParserCliAccess.buildCodebaseASG(),
+      javaParserCliAccess.buildCodebaseASG(),
+    ]);
+    const third = await javaParserCliAccess.buildCodebaseASG();
+
+    expect(mockExecFile).toHaveBeenCalledTimes(1);
+    expect(second).toBe(first);
+    expect(third).toBe(first);
+  });
+
+  it("retries the CLI after a failed build", async () => {
+    mockCliFailure("exit code 1", "bad source dir");
+    await expect(javaParserCliAccess.buildCodebaseASG()).rejects.toThrow();
+
+    mockCliOutput(fixtureJson);
+    const asg = await javaParserCliAccess.buildCodebaseASG();
+
+    expect(mockExecFile).toHaveBeenCalledTimes(2);
+    expect(asg.getNodes().length).toBeGreaterThan(0);
+  });
 });
 
 describe("JavaParser CLI output contract", () => {

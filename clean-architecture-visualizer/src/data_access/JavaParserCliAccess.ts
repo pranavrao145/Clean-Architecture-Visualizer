@@ -18,6 +18,7 @@ type RawOutput = {
 export class JavaParserCliAccess implements JavaParserCliAccessInterface {
   private readonly codebaseASGFactory: CodebaseASGFactory;
   private readonly jarPath: string;
+  private codebaseASG?: Promise<CodebaseASG>;
 
   constructor(codebaseASGFactory: CodebaseASGFactory) {
     this.codebaseASGFactory = codebaseASGFactory;
@@ -33,7 +34,21 @@ export class JavaParserCliAccess implements JavaParserCliAccessInterface {
     return path.join(root, "lib", JAR_NAME);
   }
 
-  async buildCodebaseASG(): Promise<CodebaseASG> {
+  // Runs the CLI on the first call only. Later calls (including concurrent
+  // ones) share the same result. A failed build is not cached, so the next
+  // call retries.
+  buildCodebaseASG(): Promise<CodebaseASG> {
+    if (!this.codebaseASG) {
+      this.codebaseASG = this.parseCodebase().catch((error: unknown) => {
+        this.codebaseASG = undefined;
+        throw error;
+      });
+    }
+
+    return this.codebaseASG;
+  }
+
+  private async parseCodebase(): Promise<CodebaseASG> {
     const stdout = await this.runCli();
 
     let raw: RawOutput;
