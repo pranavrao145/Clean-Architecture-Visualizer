@@ -72,6 +72,19 @@ name, signature, modifier, or relationship that cannot be inferred.
    the JSON entry.
    If no preset matches, compose the topology directly from the clarified
    requirements; do not broaden a preset to make it fit.
+   Before editing, write down the minimal node and edge count implied by the
+   confirmed topology. Prefer one compact topology with bindings over many
+   alternative topologies or broad `collectMatches` scans. In particular, do
+   not add implementation methods, products, calls, mutations, or other
+   optional members unless they are required to represent the confirmed
+   candidate or to bind values needed by verification. Candidate identification
+   must select the shape, while concrete verification performs semantic
+   checks on the exact selected subgraph.
+   Keep the base topology under roughly 12 nodes and 16 edges when a compact
+   representation is possible. Use one binding-rich topology instead of
+   alternatives that merely permute a few literal values. If the confirmed
+   shape genuinely has no smaller typed representation, include only nodes and
+   edges required by the requested relationships.
 4. Inspect the existing pattern tests and registration files in one focused
    read batch, then update all registration surfaces in one change:
    - `clean-architecture-visualizer/src/database/patterns.json`
@@ -90,20 +103,17 @@ name, signature, modifier, or relationship that cannot be inferred.
    semantic values, exact modifiers where required, and required typed edges.
    Keep JSON and data-access concerns out of the entity.
 6. Add focused tests beside the repository's existing tests. In this
-   repository, create
-   `clean-architecture-visualizer/tests/backend/entity/<name>Pattern.test.ts`
-   using the existing `pattern.test.ts` style. The test file must:
-   - construct a typed `PatternDefinition` for the new pattern;
-   - build a minimal positive `CodebaseASG` with every topology node and edge;
-   - verify `candidateIdentification` returns the expected candidate;
-   - verify `candidateVerification` accepts the positive candidate; and
-   - verify at least one near-miss is rejected (wrong semantic value,
-     modifier, node kind, cardinality, or edge direction).
-   Also add a factory construction test to
-   `clean-architecture-visualizer/tests/backend/entity/patternFactory.test.ts`
-   when that shared registry test exists. If the repository uses a different
-   test layout, locate its analogous pattern and factory tests and follow
-   their naming/style instead of inventing a parallel structure.
+   repository, do not create a new test file. Update an existing applicable
+   pattern test and the shared factory test instead:
+   - add the typed definition and positive/negative candidate checks to
+     `clean-architecture-visualizer/tests/backend/entity/pattern.test.ts`
+     when it already owns concrete pattern verification cases;
+   - add factory construction coverage to
+     `clean-architecture-visualizer/tests/backend/entity/patternFactory.test.ts`
+     when that shared registry test exists;
+   - for registration-only changes, add assertions to the existing test files
+     rather than creating a parallel pattern test file.
+   Do not create E2E, Playwright, or browser test files. If an existing test layout has no suitable location, update the nearest existing test that covers the affected surface and explain in the summary why no additional test file was created.
 7. Update the frontend pattern list and test expectations exactly:
    - In
      `clean-architecture-visualizer/frontend/src/lib/pattern-analyzer-view-model.ts`,
@@ -112,15 +122,25 @@ name, signature, modifier, or relationship that cannot be inferred.
    - In
      `clean-architecture-visualizer/frontend/tests/unit/pages/DesignPatternChecker.test.tsx`,
      add or update tests so `<Name>` is a visible checkbox and ensure request
-     arrays match the complete `AVAILABLE_PATTERNS` ID list in that array's
-     order. Replace every exact request expectation that is incomplete for
-     the newly default-checked pattern.
+     initial request arrays match the complete `AVAILABLE_PATTERNS` ID list in
+     that array's order. After toggling checkboxes, compare selected IDs as a
+     set unless the toggle implementation is being changed to preserve order.
+     Replace every exact request expectation that is incomplete for the newly
+     default-checked pattern.
    - In the existing no-pattern test, uncheck every pattern checkbox by name,
      including `Singleton` and `<Name>`, rather than toggling only one pattern.
      The re-analyze button must become disabled after all checkboxes are off.
+   - Do not add or edit mock response fixtures solely to make the new pattern
+     appear in a unit test. Existing fixtures may remain unchanged unless the
+     test's existing behavior explicitly requires representative result data
+     for the newly registered pattern.
 8. Run the smallest relevant checks from `clean-architecture-visualizer`:
-   `npm test -- --runInBand <relevant-test-file>` when tests exist, then
-   `npm run type-check`. Report commands and outcomes explicitly.
+   run only the existing backend test files changed or directly affected,
+   `npm test -- --runInBand <relevant-test-file>` plus
+   `npm run type-check` for backend changes, and run only the existing
+   frontend test file plus `npm run build` for frontend changes. Do not create
+   or run browser/E2E tests, install browser binaries, or add test fixtures
+   merely to exercise the registration. Report commands and outcomes explicitly.
 
 Do not pause for optional metadata. Fill it from the confirmed pattern shape,
 and do not create a second clarification round to refine an answer that was
