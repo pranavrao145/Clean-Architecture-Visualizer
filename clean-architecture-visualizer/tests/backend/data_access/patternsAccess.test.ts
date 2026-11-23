@@ -73,6 +73,7 @@ describe('PatternsAccess', () => {
           name: 'Service',
           packageName: 'example',
           modifiers: ['PUBLIC'],
+          supertypeFqns: [],
         },
         {
           type: 'FIELD',

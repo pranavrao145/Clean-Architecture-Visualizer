@@ -36,7 +36,23 @@ describe('DesignPatternChecker', () => {
     render(<DesignPatternChecker />);
 
     expect(await screen.findByText('Logger')).toBeInTheDocument();
-    expect(requests).toEqual([['singleton']]);
+    expect(requests).toEqual([['singleton', 'adapter']]);
+  });
+
+  it('lets users exclude Adapter from analysis', async () => {
+    const requests = recordRequests();
+    render(<DesignPatternChecker />);
+    await screen.findByText('Logger');
+
+    const adapter = screen.getByRole('checkbox', { name: 'Adapter' });
+    expect(adapter).toBeChecked();
+    fireEvent.click(adapter);
+    fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
+
+    await waitFor(() => expect(requests).toEqual([
+      ['singleton', 'adapter'],
+      ['singleton'],
+    ]));
   });
 
   it('highlights pattern members and opens on the pattern class code', async () => {
@@ -64,7 +80,7 @@ describe('DesignPatternChecker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
 
     await waitFor(() =>
-      expect(requests).toEqual([['singleton'], ['singleton']])
+      expect(requests).toEqual([['singleton', 'adapter'], ['adapter', 'singleton']])
     );
   });
 
@@ -75,6 +91,7 @@ describe('DesignPatternChecker', () => {
     const checkbox = screen.getByRole('checkbox', { name: 'Singleton' });
 
     fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Adapter' }));
 
     expect(button).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('noPatternSelected');

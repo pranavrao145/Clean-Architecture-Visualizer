@@ -1,5 +1,6 @@
 export enum PatternId {
   Singleton = 'singleton',
+  Adapter = 'adapter',
 }
 
 export function isPatternId(value: unknown): value is PatternId {
