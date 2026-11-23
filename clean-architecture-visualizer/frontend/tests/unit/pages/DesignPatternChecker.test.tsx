@@ -36,7 +36,11 @@ describe('DesignPatternChecker', () => {
     render(<DesignPatternChecker />);
 
     expect(await screen.findByText('Logger')).toBeInTheDocument();
-    expect(requests).toEqual([['singleton']]);
+    expect(screen.getByRole('checkbox', { name: 'Singleton' })).toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: 'AbstractFactory' })
+    ).toBeChecked();
+    expect(requests).toEqual([['singleton', 'abstract-factory']]);
   });
 
   it('highlights pattern members and opens on the pattern class code', async () => {
@@ -64,7 +68,30 @@ describe('DesignPatternChecker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
 
     await waitFor(() =>
-      expect(requests).toEqual([['singleton'], ['singleton']])
+      expect(requests).toHaveLength(2)
+    );
+    expect(requests[1]).toEqual(
+      expect.arrayContaining(['singleton', 'abstract-factory'])
+    );
+  });
+
+  it('includes Abstract Factory in the selectable patterns', async () => {
+    const requests = recordRequests();
+    render(<DesignPatternChecker />);
+    await screen.findByText('Logger');
+
+    const abstractFactory = screen.getByRole('checkbox', {
+      name: 'AbstractFactory',
+    });
+    fireEvent.click(abstractFactory);
+
+    expect(abstractFactory).not.toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: 'reAnalyze' }));
+    await waitFor(() =>
+      expect(requests).toEqual([
+        ['singleton', 'abstract-factory'],
+        ['singleton'],
+      ])
     );
   });
 
@@ -73,13 +100,18 @@ describe('DesignPatternChecker', () => {
     await screen.findByText('Logger');
     const button = screen.getByRole('button', { name: 'reAnalyze' });
     const checkbox = screen.getByRole('checkbox', { name: 'Singleton' });
+    const abstractFactory = screen.getByRole('checkbox', {
+      name: 'AbstractFactory',
+    });
 
     fireEvent.click(checkbox);
+    fireEvent.click(abstractFactory);
 
     expect(button).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent('noPatternSelected');
 
     fireEvent.click(checkbox);
+    fireEvent.click(abstractFactory);
 
     expect(button).toBeEnabled();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();

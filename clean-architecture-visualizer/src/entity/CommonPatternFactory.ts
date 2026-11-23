@@ -3,11 +3,13 @@ import type { Pattern } from './Pattern.js';
 import type { PatternFactory } from './PatternFactory.js';
 import { PatternId } from './PatternId.js';
 import { SingletonDesignPattern } from './SingletonDesignPattern.js';
+import { AbstractFactoryDesignPattern } from './AbstractFactoryDesignPattern.js';
 
 type PatternConstructor = new (data: PatternDefinition) => Pattern;
 
 const patternRegistry: Record<PatternId, PatternConstructor> = {
   [PatternId.Singleton]: SingletonDesignPattern,
+  [PatternId.AbstractFactory]: AbstractFactoryDesignPattern,
 };
 
 export class CommonPatternFactory implements PatternFactory {

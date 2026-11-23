@@ -1,5 +1,8 @@
 // The patterns a user can choose to analyse.
-export const AVAILABLE_PATTERNS = [{ id: 'singleton', name: 'Singleton' }];
+export const AVAILABLE_PATTERNS = [
+  { id: 'singleton', name: 'Singleton' },
+  { id: 'abstract-factory', name: 'AbstractFactory' },
+];
 
 // ----- What the API sends (POST /design-patterns/analyze) -----
 

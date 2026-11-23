@@ -1,4 +1,81 @@
 {
+    "abstract-factory": {
+        "metadata": {
+            "patternName": "AbstractFactory",
+            "patternType": "Design Pattern",
+            "description": "Creational design pattern. Provides an interface for creating families of related products without specifying their concrete classes.",
+            "learningInfo": "Use Abstract Factory when a client must work with related product families through abstractions and concrete implementations can vary independently."
+        },
+        "candidateTopologies": [{
+            "nodes": [
+                { "type": "INTERFACE", "fqn": { "bind": "abstractFactory" } },
+                { "type": "INTERFACE", "fqn": { "bind": "productInterfaceA" } },
+                { "type": "INTERFACE", "fqn": { "bind": "productInterfaceB" } },
+                { "type": "METHOD", "fqn": { "bind": "factoryMethodA" }, "returnTypeFqn": { "equalsBinding": "productInterfaceA" } },
+                { "type": "METHOD", "fqn": { "bind": "factoryMethodB" }, "returnTypeFqn": { "equalsBinding": "productInterfaceB" } },
+                { "type": "CLASS", "fqn": { "bind": "concreteFactoryA" } },
+                { "type": "CLASS", "fqn": { "bind": "concreteFactoryB" } },
+                { "type": "CLASS", "fqn": { "bind": "clientClass" } },
+                { "type": "FIELD", "fqn": { "bind": "factoryField" } },
+                { "type": "METHOD", "fqn": { "bind": "clientMethod" } }
+            ],
+            "edges": [
+                { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "abstractFactory" }, "methodFqn": { "equalsBinding": "factoryMethodA" } },
+                { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "abstractFactory" }, "methodFqn": { "equalsBinding": "factoryMethodB" } },
+                { "type": "IMPLEMENTS", "interfaceFqn": { "equalsBinding": "abstractFactory" }, "implementingClassFqn": { "equalsBinding": "concreteFactoryA" } },
+                { "type": "IMPLEMENTS", "interfaceFqn": { "equalsBinding": "abstractFactory" }, "implementingClassFqn": { "equalsBinding": "concreteFactoryB" } },
+                { "type": "HAS_FIELD", "ownerFqn": { "equalsBinding": "clientClass" }, "fieldFqn": { "equalsBinding": "factoryField" } },
+                { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "clientClass" }, "methodFqn": { "equalsBinding": "clientMethod" } }
+            ],
+            "collectMatches": [
+                {
+                    "nodes": [
+                        { "type": "CLASS", "fqn": { "bind": "productA1" } },
+                        { "type": "CLASS", "fqn": { "bind": "productA2" } },
+                        { "type": "CLASS", "fqn": { "bind": "productB1" } },
+                        { "type": "CLASS", "fqn": { "bind": "productB2" } }
+                    ],
+                    "edges": [
+                        { "type": "IMPLEMENTS", "interfaceFqn": { "equalsBinding": "productInterfaceA" }, "implementingClassFqn": { "equalsBinding": "productA1" } },
+                        { "type": "IMPLEMENTS", "interfaceFqn": { "equalsBinding": "productInterfaceA" }, "implementingClassFqn": { "equalsBinding": "productA2" } },
+                        { "type": "IMPLEMENTS", "interfaceFqn": { "equalsBinding": "productInterfaceB" }, "implementingClassFqn": { "equalsBinding": "productB1" } },
+                        { "type": "IMPLEMENTS", "interfaceFqn": { "equalsBinding": "productInterfaceB" }, "implementingClassFqn": { "equalsBinding": "productB2" } }
+                    ],
+                    "minMatches": 1
+                },
+                {
+                    "nodes": [
+                        { "type": "METHOD", "fqn": { "bind": "factoryMethodAImplA" } },
+                        { "type": "METHOD", "fqn": { "bind": "factoryMethodBImplA" } },
+                        { "type": "METHOD", "fqn": { "bind": "factoryMethodAImplB" } },
+                        { "type": "METHOD", "fqn": { "bind": "factoryMethodBImplB" } }
+                    ],
+                    "edges": [
+                        { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "concreteFactoryA" }, "methodFqn": { "equalsBinding": "factoryMethodAImplA" } },
+                        { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "concreteFactoryA" }, "methodFqn": { "equalsBinding": "factoryMethodBImplA" } },
+                        { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "concreteFactoryB" }, "methodFqn": { "equalsBinding": "factoryMethodAImplB" } },
+                        { "type": "HAS_METHOD", "ownerFqn": { "equalsBinding": "concreteFactoryB" }, "methodFqn": { "equalsBinding": "factoryMethodBImplB" } }
+                    ],
+                    "minMatches": 1
+                },
+                {
+                    "nodes": [],
+                    "edges": [{ "type": "CALLS", "isConstructorCall": true, "insideLoop": false, "insideConditional": false }],
+                    "minMatches": 4
+                },
+                {
+                    "nodes": [],
+                    "edges": [{ "type": "CALLS", "callingMethodFqn": { "equalsBinding": "clientMethod" }, "targetObjectFqn": { "equalsBinding": "factoryField" } }],
+                    "minMatches": 2
+                },
+                {
+                    "nodes": [],
+                    "edges": [{ "type": "MUTATES_FIELD" }],
+                    "minMatches": 0
+                }
+            ]
+        }]
+    },
     "singleton": {
         "metadata": {
             "patternName": "Singleton",
