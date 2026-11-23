@@ -95,5 +95,5 @@ _Avoid_: main (for the role)
 
 **Design pattern**:
 A reusable design solution that CAVE can identify in a Java codebase. To add one,
-follow the developer guide's [new pattern instructions](docs/developers/Patterns.md#adding-a-new-pattern),
+follow the developer guide's [new pattern instructions](docs/developers/Pattern-Analyzer.md#adding-a-new-pattern),
 including the JSON definition, pattern enums, concrete entity, and factory registration.
