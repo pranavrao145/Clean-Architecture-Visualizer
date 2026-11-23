@@ -1,12 +1,12 @@
-import type { CodebaseASGEdge } from '../types/codebaseASGEdges.js';
-import type { CodebaseASGNode } from '../types/codebaseASGNodes.js';
+import type { CodebaseASGEdge } from "../types/codebaseASGEdges.js";
+import type { CodebaseASGNode } from "../types/codebaseASGNodes.js";
 
-export type IndexedKind = 'node' | 'edge';
+export type IndexedKind = "node" | "edge";
 
 const EMPTY: readonly number[] = [];
 
 function isIndexable(value: unknown): value is string | boolean {
-  return typeof value === 'string' || typeof value === 'boolean';
+  return typeof value === "string" || typeof value === "boolean";
 }
 
 function indexKey(field: string, value: string | boolean): string {
@@ -34,7 +34,7 @@ export class CodebaseASGIndex {
 
   private static build(
     elements: readonly object[],
-    entries: Map<string, number[]>
+    entries: Map<string, number[]>,
   ): void {
     elements.forEach((element, position) => {
       for (const [field, value] of Object.entries(element)) {
@@ -53,14 +53,14 @@ export class CodebaseASGIndex {
   lookup(
     kind: IndexedKind,
     field: string,
-    value: string | boolean
+    value: string | boolean,
   ): readonly number[] {
-    const entries = kind === 'node' ? this.nodeEntries : this.edgeEntries;
+    const entries = kind === "node" ? this.nodeEntries : this.edgeEntries;
     return entries.get(indexKey(field, value)) ?? EMPTY;
   }
 
   size(kind: IndexedKind): number {
-    return kind === 'node' ? this.nodeCount : this.edgeCount;
+    return kind === "node" ? this.nodeCount : this.edgeCount;
   }
 }
 

@@ -1,29 +1,29 @@
-import { isDeepStrictEqual } from 'node:util';
+import { isDeepStrictEqual } from "node:util";
 import type {
   CandidateTopology,
   PatternDefinition,
-} from '../types/patternDefinition.js';
-import { CodebaseASG } from './CodebaseASG.js';
+} from "../types/patternDefinition.js";
+import { CodebaseASG } from "./CodebaseASG.js";
 import {
   type CodebaseASGIndex,
   type IndexedKind,
   isIndexable,
-} from './CodebaseASGIndex.js';
+} from "./CodebaseASGIndex.js";
 
 type Bindings = Map<string, unknown>;
 
 const QUERY_OPERATORS = new Set([
-  'bind',
-  'equalsBinding',
-  'contains',
-  'excludes',
-  'oneOf',
+  "bind",
+  "equalsBinding",
+  "contains",
+  "excludes",
+  "oneOf",
 ]);
 
 // Validates a value nested in contains or oneOf: either a query operator or an
 // object whose properties are each queries. These cannot introduce bindings.
 function validateNestedValue(value: unknown, names: Set<string>): void {
-  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
     const properties = Object.entries(value);
 
     if (properties.length !== 1 || !QUERY_OPERATORS.has(properties[0][0])) {
@@ -42,35 +42,35 @@ function validateNestedValue(value: unknown, names: Set<string>): void {
 function validateQueryValue(
   value: unknown,
   names: Set<string>,
-  insideContains = false
+  insideContains = false,
 ): Set<string> {
   if (Array.isArray(value)) {
     return value.reduce<Set<string>>(
       (current, item) => validateQueryValue(item, current, insideContains),
-      names
+      names,
     );
   }
 
-  if (value === null || typeof value !== 'object') {
+  if (value === null || typeof value !== "object") {
     return names;
   }
 
   const entries = Object.entries(value);
 
   if (entries.length !== 1) {
-    throw new Error('A query operator must contain exactly one property');
+    throw new Error("A query operator must contain exactly one property");
   }
 
   const [operator, argument] = entries[0];
 
-  if (operator === 'contains') {
+  if (operator === "contains") {
     validateNestedValue(argument, names);
     return names;
   }
 
-  if (operator === 'oneOf') {
+  if (operator === "oneOf") {
     if (!Array.isArray(argument) || argument.length === 0) {
-      throw new Error('The oneOf operator requires a non-empty array');
+      throw new Error("The oneOf operator requires a non-empty array");
     }
 
     for (const alternative of argument) {
@@ -80,20 +80,20 @@ function validateQueryValue(
     return names;
   }
 
-  if (operator === 'excludes') {
+  if (operator === "excludes") {
     if (!Array.isArray(argument)) {
-      throw new Error('The excludes operator requires an array');
+      throw new Error("The excludes operator requires an array");
     }
 
     return names;
   }
 
-  if (operator === 'bind' || operator === 'equalsBinding') {
-    if (typeof argument !== 'string' || argument.length === 0) {
+  if (operator === "bind" || operator === "equalsBinding") {
+    if (typeof argument !== "string" || argument.length === 0) {
       throw new Error(`Invalid ${operator} binding name`);
     }
 
-    if (operator === 'equalsBinding') {
+    if (operator === "equalsBinding") {
       if (!names.has(argument)) {
         throw new Error(`Unbound query reference: ${argument}`);
       }
@@ -102,7 +102,7 @@ function validateQueryValue(
     }
 
     if (insideContains) {
-      throw new Error('Cannot introduce a binding inside contains or oneOf');
+      throw new Error("Cannot introduce a binding inside contains or oneOf");
     }
 
     if (names.has(argument)) {
@@ -128,7 +128,7 @@ function validateTopology(topology: CandidateTopology): void {
     topology.collectMatches !== undefined &&
     !Array.isArray(topology.collectMatches)
   ) {
-    throw new Error('Topology collectMatches must be an array');
+    throw new Error("Topology collectMatches must be an array");
   }
 
   for (const collection of topology.collectMatches ?? []) {
@@ -139,7 +139,7 @@ function validateTopology(topology: CandidateTopology): void {
       collection.nodes.length + collection.edges.length === 0
     ) {
       throw new Error(
-        'A collection must contain at least one node or edge query'
+        "A collection must contain at least one node or edge query",
       );
     }
 
@@ -148,7 +148,7 @@ function validateTopology(topology: CandidateTopology): void {
       (!Number.isSafeInteger(collection.minMatches) ||
         collection.minMatches < 0)
     ) {
-      throw new Error('Collection minMatches must be a non-negative integer');
+      throw new Error("Collection minMatches must be a non-negative integer");
     }
 
     let localNames = names;
@@ -160,12 +160,6 @@ function validateTopology(topology: CandidateTopology): void {
     }
   }
 }
-
-type MatchHandler = (
-  nodeIndexes: Set<number>,
-  edgeIndexes: Set<number>,
-  bindings: Bindings
-) => void;
 
 function matchKey(nodeIndexes: Set<number>, edgeIndexes: Set<number>): string {
   return JSON.stringify([
@@ -193,28 +187,28 @@ type Solution = {
 function collectRequiredNames(
   value: unknown,
   nested: boolean,
-  names: Set<string>
+  names: Set<string>,
 ): void {
   if (Array.isArray(value)) {
     for (const item of value) collectRequiredNames(item, nested, names);
     return;
   }
 
-  if (value === null || typeof value !== 'object') return;
+  if (value === null || typeof value !== "object") return;
 
   const entries = Object.entries(value);
 
   if (entries.length === 1) {
     const [operator, argument] = entries[0];
 
-    if (operator === 'equalsBinding') {
-      if (nested && typeof argument === 'string') names.add(argument);
+    if (operator === "equalsBinding") {
+      if (nested && typeof argument === "string") names.add(argument);
       return;
     }
 
-    if (operator === 'bind' || operator === 'excludes') return;
+    if (operator === "bind" || operator === "excludes") return;
 
-    if (operator === 'contains' || operator === 'oneOf') {
+    if (operator === "contains" || operator === "oneOf") {
       collectRequiredNames(argument, true, names);
       return;
     }
@@ -238,7 +232,7 @@ function buildItems(query: { nodes: object[]; edges: object[] }): QueryItem[] {
       };
     });
 
-  return [...toItems(query.nodes, 'node'), ...toItems(query.edges, 'edge')];
+  return [...toItems(query.nodes, "node"), ...toItems(query.edges, "edge")];
 }
 
 export abstract class Pattern {
@@ -273,7 +267,7 @@ export abstract class Pattern {
           new Set(solution.edges),
           solution.bindings,
           matches,
-          seen
+          seen,
         );
       }
     }
@@ -287,7 +281,7 @@ export abstract class Pattern {
   private solve(
     graph: CodebaseASG,
     items: QueryItem[],
-    initialBindings: Bindings
+    initialBindings: Bindings,
   ): Solution[] {
     const index = graph.getIndex();
     const elements = { node: graph.getNodes(), edge: graph.getEdges() };
@@ -306,8 +300,8 @@ export abstract class Pattern {
             .map(({ itemIndex }) => assigned[itemIndex]);
 
         solutions.push({
-          nodes: byKind('node'),
-          edges: byKind('edge'),
+          nodes: byKind("node"),
+          edges: byKind("edge"),
           bindings,
         });
         return;
@@ -353,7 +347,7 @@ export abstract class Pattern {
         const next = this.matchValue(
           item.shape,
           elements[item.kind][position],
-          bindings
+          bindings,
         );
 
         if (!next) continue;
@@ -393,7 +387,7 @@ export abstract class Pattern {
   private candidatesFor(
     index: CodebaseASGIndex,
     item: QueryItem,
-    bindings: Bindings
+    bindings: Bindings,
   ): readonly number[] | undefined {
     let best: readonly number[] | undefined;
 
@@ -403,7 +397,7 @@ export abstract class Pattern {
         item.kind,
         field,
         value,
-        bindings
+        bindings,
       );
 
       if (!bucket) continue;
@@ -419,11 +413,11 @@ export abstract class Pattern {
     kind: IndexedKind,
     field: string,
     value: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): readonly number[] | undefined {
     if (isIndexable(value)) return index.lookup(kind, field, value);
 
-    if (value === null || typeof value !== 'object') return undefined;
+    if (value === null || typeof value !== "object") return undefined;
 
     const entries = Object.entries(value);
 
@@ -432,8 +426,8 @@ export abstract class Pattern {
     const [operator, argument] = entries[0];
 
     if (
-      (operator === 'equalsBinding' || operator === 'bind') &&
-      typeof argument === 'string' &&
+      (operator === "equalsBinding" || operator === "bind") &&
+      typeof argument === "string" &&
       bindings.has(argument)
     ) {
       const bound = bindings.get(argument);
@@ -441,7 +435,7 @@ export abstract class Pattern {
     }
 
     if (
-      operator === 'oneOf' &&
+      operator === "oneOf" &&
       Array.isArray(argument) &&
       argument.every(isIndexable)
     ) {
@@ -466,7 +460,7 @@ export abstract class Pattern {
     baseEdges: Set<number>,
     bindings: Bindings,
     matches: CodebaseASG[],
-    seen: Set<string>
+    seen: Set<string>,
   ): void {
     const collections = topology.collectMatches ?? [];
     const results = new Map<number, Solution[]>();
@@ -479,7 +473,7 @@ export abstract class Pattern {
       .sort(
         (a, b) =>
           Number((b.collection.minMatches ?? 0) > 0) -
-          Number((a.collection.minMatches ?? 0) > 0)
+          Number((a.collection.minMatches ?? 0) > 0),
       );
 
     for (const { collection, position } of order) {
@@ -488,7 +482,7 @@ export abstract class Pattern {
       for (const solution of this.solve(
         fullCodebaseASG,
         buildItems(collection),
-        bindings
+        bindings,
       )) {
         const key = matchKey(new Set(solution.nodes), new Set(solution.edges));
         if (!unique.has(key)) unique.set(key, solution);
@@ -518,8 +512,8 @@ export abstract class Pattern {
       matches.push(
         new CodebaseASG(
           [...nodes].map((index) => fullCodebaseASG.getNodes()[index]),
-          [...edges].map((index) => fullCodebaseASG.getEdges()[index])
-        )
+          [...edges].map((index) => fullCodebaseASG.getEdges()[index]),
+        ),
       );
     }
   }
@@ -531,13 +525,13 @@ export abstract class Pattern {
   private matchValue(
     patternValue: unknown,
     candidateValue: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
     if (Array.isArray(patternValue)) {
       return this.matchArrayValue(patternValue, candidateValue, bindings);
     }
 
-    if (patternValue !== null && typeof patternValue === 'object') {
+    if (patternValue !== null && typeof patternValue === "object") {
       return this.matchObjectValue(patternValue, candidateValue, bindings);
     }
 
@@ -547,7 +541,7 @@ export abstract class Pattern {
   private bindValue(
     name: string,
     value: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
     if (value === undefined) {
       return undefined;
@@ -568,7 +562,7 @@ export abstract class Pattern {
   private matchArrayValue(
     patternValue: unknown[],
     candidateValue: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
     if (
       !Array.isArray(candidateValue) ||
@@ -583,7 +577,7 @@ export abstract class Pattern {
       const matched = this.matchValue(
         patternValue[index],
         candidateValue[index],
-        nextBindings
+        nextBindings,
       );
       if (!matched) return undefined;
       nextBindings = matched;
@@ -595,45 +589,45 @@ export abstract class Pattern {
   private matchObjectValue(
     patternValue: object,
     candidateValue: unknown,
-    bindings: Bindings
+    bindings: Bindings,
   ): Bindings | undefined {
     const entries = Object.entries(patternValue);
 
     if (entries.length === 1) {
       const [operator, value] = entries[0];
 
-      if (operator === 'contains') {
+      if (operator === "contains") {
         return Array.isArray(candidateValue) &&
           candidateValue.some(
-            (item) => this.matchValue(value, item, bindings) !== undefined
+            (item) => this.matchValue(value, item, bindings) !== undefined,
           )
           ? bindings
           : undefined;
       }
 
-      if (operator === 'oneOf') {
+      if (operator === "oneOf") {
         return Array.isArray(value) &&
           value.some(
             (alternative) =>
               this.matchValue(alternative, candidateValue, bindings) !==
-              undefined
+              undefined,
           )
           ? bindings
           : undefined;
       }
 
-      if (operator === 'excludes') {
+      if (operator === "excludes") {
         return Array.isArray(candidateValue) &&
           Array.isArray(value) &&
           value.every((excluded) =>
-            candidateValue.every((item) => !isDeepStrictEqual(item, excluded))
+            candidateValue.every((item) => !isDeepStrictEqual(item, excluded)),
           )
           ? bindings
           : undefined;
       }
 
-      if (operator === 'bind' || operator === 'equalsBinding') {
-        if (typeof value !== 'string' || value.length === 0) {
+      if (operator === "bind" || operator === "equalsBinding") {
+        if (typeof value !== "string" || value.length === 0) {
           throw new Error(`Invalid ${operator} binding name`);
         }
 
@@ -641,7 +635,7 @@ export abstract class Pattern {
       }
     }
 
-    if (candidateValue === null || typeof candidateValue !== 'object') {
+    if (candidateValue === null || typeof candidateValue !== "object") {
       return undefined;
     }
 
@@ -650,7 +644,7 @@ export abstract class Pattern {
       const matched = this.matchValue(
         value,
         (candidateValue as Record<string, unknown>)[key],
-        nextBindings
+        nextBindings,
       );
       if (!matched) return undefined;
       nextBindings = matched;
@@ -661,7 +655,7 @@ export abstract class Pattern {
   /** Checks that two modifier lists contain exactly the same modifiers. */
   protected hasExactlyModifiers(
     modifiers: string[],
-    expectedModifiers: string[]
+    expectedModifiers: string[],
   ): boolean {
     return (
       modifiers.length === expectedModifiers.length &&

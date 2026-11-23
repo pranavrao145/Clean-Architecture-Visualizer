@@ -1,6 +1,6 @@
-import { CodebaseASGIndex } from './CodebaseASGIndex.js';
-import type { CodebaseASGEdge } from '../types/codebaseASGEdges.js';
-import type { CodebaseASGNode } from '../types/codebaseASGNodes.js';
+import { CodebaseASGIndex } from "./CodebaseASGIndex.js";
+import type { CodebaseASGEdge } from "../types/codebaseASGEdges.js";
+import type { CodebaseASGNode } from "../types/codebaseASGNodes.js";
 
 export class CodebaseASG {
   private readonly nodes: CodebaseASGNode[];
